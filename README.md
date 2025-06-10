@@ -85,4 +85,4 @@ The application uses Supabase with Row Level Security (RLS) enabled. The main ta
 
 ## License
 
-ISC
+MIT
