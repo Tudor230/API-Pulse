@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { EmailConfirmation } from './email-confirmation'
+import { getSiteUrl } from '@/lib/site-url'
 
 export function SignUpForm() {
   const [email, setEmail] = useState("")
@@ -48,7 +49,7 @@ export function SignUpForm() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+          emailRedirectTo: `${getSiteUrl()}/auth/callback?next=/dashboard`
         }
       })
 
@@ -73,7 +74,7 @@ export function SignUpForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+          redirectTo: `${getSiteUrl()}/auth/callback?next=/dashboard`
         }
       })
 

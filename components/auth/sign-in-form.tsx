@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
+import { getSiteUrl } from '@/lib/site-url'
 
 export function SignInForm() {
   const [email, setEmail] = useState("")
@@ -60,7 +61,7 @@ export function SignInForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`
+          redirectTo: `${getSiteUrl()}/auth/callback?next=/dashboard`
         }
       })
 
