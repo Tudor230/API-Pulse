@@ -1,20 +1,19 @@
-export default function HomePage() {
+import { Header } from "@/components/header"
+import { HeroSection } from "@/components/hero-section"
+import { FeaturesSection } from "@/components/features-section"
+import { createClient } from '@/lib/supabase-server'
+
+export default async function HomePage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          API Pulse
-        </h1>
-        <p className="text-xl text-gray-600 mb-8">
-          Monitor your APIs with ease
-        </p>
-        <div className="bg-white rounded-lg shadow-lg p-6 max-w-md">
-          <p className="text-gray-700">
-            Welcome to your API monitoring dashboard. 
-            Get started by setting up your first monitor.
-          </p>
-        </div>
-      </div>
-    </main>
+    <>
+      <Header user={user} />
+      <main>
+        <HeroSection user={user} />
+        <FeaturesSection />
+      </main>
+    </>
   )
 } 
