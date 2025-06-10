@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import AddMonitorForm from '@/components/add-monitor-form'
 import MonitorsList from '@/components/monitors-list'
-import { Monitor } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
+import { Monitor } from '@/lib/supabase'
 
 interface TestPageClientProps {
   initialMonitors: Monitor[]

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { createBrowserClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,7 +15,7 @@ export default function TestAuth() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   
-  const supabase = createBrowserClient()
+  const supabase = createClient()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()

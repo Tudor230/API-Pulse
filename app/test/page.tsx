@@ -1,14 +1,14 @@
-import { createServerClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase-server'
 import TestPageClient from '@/app/test/test-page-client'
 import TestAuth from './auth'
 
 export default async function TestPage() {
-  const supabase = createServerClient()
+  const supabase = await createClient()
   
   // Check if user is authenticated
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
   
-  if (!session) {
+  if (authError || !user) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="max-w-2xl mx-auto">
@@ -57,7 +57,7 @@ export default async function TestPage() {
             Test the Supabase database connection and CRUD operations
           </p>
           <div className="mt-4 text-sm text-green-600 bg-green-50 border border-green-200 rounded-lg p-3 inline-block">
-            ✅ Authenticated as: {session.user.email}
+            ✅ Authenticated as: {user.email}
           </div>
         </div>
 
