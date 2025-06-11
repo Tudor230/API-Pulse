@@ -15,16 +15,16 @@ export function Header({ user }: HeaderProps) {
   return (
     <header className="bg-secondary/30 backdrop-blur-xl border-b border-border sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+        <div className="relative flex items-center h-16">
+          {/* Logo - Left Side */}
           <div className="flex items-center">
             <Link href={user ? "/dashboard" : "/"}>
-              <LogoFull size="lg" animated />
+              <LogoFull size="md" animated />
             </Link>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-8">
+          {/* Navigation Links - Centered */}
+          <nav className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
             {user ? (
               // Authenticated navigation
               <>
@@ -72,8 +72,8 @@ export function Header({ user }: HeaderProps) {
             )}
           </nav>
 
-          {/* Auth Buttons / User Menu */}
-          <div className="flex items-center space-x-4">
+          {/* Auth Buttons / User Menu - Right Side */}
+          <div className="flex items-center space-x-4 ml-auto">
             <ThemeToggle />
             {user ? (
               // Authenticated user menu
