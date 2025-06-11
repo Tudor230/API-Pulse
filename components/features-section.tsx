@@ -41,11 +41,11 @@ export function FeaturesSection() {
   ]
 
   return (
-    <section id="features" className="py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-secondary/20">
-      <div className="max-w-7xl mx-auto">
+    <section id="features" className="relative py-32 px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto z-10">
         <div className="text-center mb-20">
           <div className="mb-4 flex justify-center">
-            <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary backdrop-blur-sm border border-primary/20">
+            <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary backdrop-blur-sm border border-primary/20 hover:bg-primary/15 hover:scale-105 transition-all duration-300">
               🚀 Powerful Features
             </div>
           </div>
@@ -59,7 +59,15 @@ export function FeaturesSection() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <FeatureGlassCard key={index} feature={feature} index={index} />
+            <div
+              key={index}
+              className="group hover:scale-105 transition-all duration-500 ease-out"
+              style={{
+                animationDelay: `${index * 150}ms`,
+              }}
+            >
+              <FeatureGlassCard feature={feature} index={index} />
+            </div>
           ))}
         </div>
       </div>

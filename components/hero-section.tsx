@@ -12,8 +12,8 @@ export function HeroSection({ user }: HeroSectionProps) {
   if (user) {
     // Authenticated user - show welcome back message
     return (
-      <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary/10 via-background to-secondary/30 py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="relative min-h-screen flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto text-center z-10">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 tracking-tight">
             Welcome back to{" "}
             <span className="text-primary bg-gradient-to-r from-primary to-primary/80 bg-clip-text">API Pulse</span>
@@ -25,13 +25,13 @@ export function HeroSection({ user }: HeroSectionProps) {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button asChild size="lg" className="text-lg px-8 py-3">
+            <Button asChild size="lg" className="text-lg px-8 py-3 hover:scale-105 transition-transform duration-200">
               <Link href="/dashboard">
                 Go to Dashboard
               </Link>
             </Button>
             
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-3">
+            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-3 hover:scale-105 transition-transform duration-200">
               <Link href="/monitors">
                 View Monitors
               </Link>
@@ -44,10 +44,10 @@ export function HeroSection({ user }: HeroSectionProps) {
 
   // Unauthenticated user - show standard landing page
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary/10 via-background to-secondary/30 py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto text-center">
+    <section className="relative min-h-screen flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto text-center z-10">
         <div className="mb-8 flex justify-center">
-          <div className="inline-flex items-center rounded-full bg-secondary/50 px-4 py-2 text-sm font-medium text-secondary-foreground backdrop-blur-sm border border-border/50">
+          <div className="inline-flex items-center rounded-full bg-secondary/50 px-4 py-2 text-sm font-medium text-secondary-foreground backdrop-blur-sm border border-border/50 hover:bg-secondary/70 transition-colors duration-200">
             ✨ Now with real-time monitoring
           </div>
         </div>
@@ -63,13 +63,13 @@ export function HeroSection({ user }: HeroSectionProps) {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-          <Button asChild size="lg" className="text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Button asChild size="lg" className="text-lg px-8 py-4 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
             <Link href="/sign-up">
               Start Monitoring Free
             </Link>
           </Button>
           
-          <Button asChild variant="outline" size="lg" className="text-lg px-8 py-4 backdrop-blur-sm border-border/50 hover:bg-secondary/50 transition-all duration-300">
+          <Button asChild variant="outline" size="lg" className="text-lg px-8 py-4 backdrop-blur-sm border-border/50 hover:bg-secondary/50 hover:scale-105 transition-all duration-300">
             <Link href="#features">
               See How It Works
             </Link>
@@ -77,16 +77,16 @@ export function HeroSection({ user }: HeroSectionProps) {
         </div>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+          <div className="flex items-center gap-2 hover:text-foreground transition-colors duration-200">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
             No credit card required
           </div>
-          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-primary rounded-full"></div>
+          <div className="flex items-center gap-2 hover:text-foreground transition-colors duration-200">
+            <div className="w-2 h-2 bg-primary rounded-full"></div>
             Setup in under 2 minutes
           </div>
-          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-violet-500 rounded-full"></div>
+          <div className="flex items-center gap-2 hover:text-foreground transition-colors duration-200">
+            <div className="w-2 h-2 bg-accent rounded-full animate-pulse animation-delay-1000"></div>
             Free forever plan
           </div>
         </div>
