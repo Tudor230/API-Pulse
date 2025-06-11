@@ -114,7 +114,7 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
           )}
 
           {success && (
-            <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+            <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
               <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}

@@ -18,13 +18,13 @@ export default async function SignUpPage() {
       <Header user={null} />
 
       {/* Main content */}
-      <main className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 flex items-center justify-center bg-gradient-to-br from-secondary/10 to-muted/20 py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                          <h1 className="text-3xl font-bold text-foreground mb-2">
               Get started today
             </h1>
-            <p className="text-gray-600 dark:text-gray-300">
+                          <p className="text-muted-foreground">
               Create your account and start monitoring your APIs
             </p>
           </div>
@@ -32,7 +32,7 @@ export default async function SignUpPage() {
           <SignUpForm />
           
           {/* Additional trust signals */}
-          <div className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                      <div className="mt-8 text-center text-sm text-muted-foreground">
             <div className="flex items-center justify-center space-x-4">
               <span>✓ Free to start</span>
               <span>✓ No credit card required</span>

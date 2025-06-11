@@ -26,7 +26,7 @@ export function Logo({
     return (
       <div className={cn("flex items-center space-x-2", className)}>
         <Logo size={size} animated={animated} />
-        <span className="text-xl font-bold text-gray-900 dark:text-white">
+        <span className="text-xl font-bold text-foreground">
           API Pulse
         </span>
       </div>
@@ -41,27 +41,23 @@ export function Logo({
         xmlns="http://www.w3.org/2000/svg"
         className="w-full h-full"
       >
-        {/* Background circle with gradient */}
-        <defs>
-          <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#3B82F6" />
-            <stop offset="100%" stopColor="#1E40AF" />
-          </linearGradient>
+        {/* Background circle with theme primary blue */}
+        {/* <defs>
           <linearGradient id="pulseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#60A5FA" stopOpacity="0" />
             <stop offset="50%" stopColor="#60A5FA" stopOpacity="1" />
             <stop offset="100%" stopColor="#60A5FA" stopOpacity="0" />
           </linearGradient>
-        </defs>
+        </defs> */}
 
-        {/* Main circle background */}
+        {/* Main circle background using theme primary */}
         <circle
           cx="16"
           cy="16"
           r="15"
-          fill="url(#logoGradient)"
-          stroke="rgba(0, 0, 0, 0.1)" // Added a subtle, dark outline
-          strokeWidth="1" // Defines the thickness of the outline
+          className="fill-primary"
+          stroke="rgba(0, 0, 0, 0.1)"
+          strokeWidth="1"
         />
 
         {/* Pulse rings with animation */}

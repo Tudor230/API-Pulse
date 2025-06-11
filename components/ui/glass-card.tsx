@@ -82,15 +82,15 @@ export function FeatureGlassCard({ feature, index, className = "" }: FeatureGlas
       {/* Content */}
       <div className="relative z-10">
         <CardHeader>
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500/30 to-blue-600/20 dark:from-blue-400/20 dark:to-blue-600/10 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm border border-white/60 dark:border-white/30 shadow-md group-hover:shadow-lg transition-shadow duration-300">
+          <div className="w-12 h-12 bg-gradient-to-br from-primary/30 to-primary/20 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm border border-border shadow-md group-hover:shadow-lg transition-shadow duration-300">
             <span className="text-2xl filter drop-shadow-sm">{feature.icon}</span>
           </div>
-          <CardTitle className="text-xl text-gray-900 dark:text-white font-semibold tracking-tight">
+                      <CardTitle className="text-xl text-foreground font-semibold tracking-tight">
             {feature.title}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <CardDescription className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
+                      <CardDescription className="text-muted-foreground text-base leading-relaxed">
             {feature.description}
           </CardDescription>
         </CardContent>
@@ -100,7 +100,7 @@ export function FeatureGlassCard({ feature, index, className = "" }: FeatureGlas
       <div className="absolute inset-0 rounded-lg border border-white/50 dark:border-white/15 pointer-events-none" />
       
       {/* Bottom accent line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 dark:via-blue-400/50 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
     </GlassCard>
   )
 } 

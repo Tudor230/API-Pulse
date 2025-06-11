@@ -8,12 +8,12 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-secondary/20 via-secondary/5 to-muted/30">
       <Header user={user} />
       <main>
         <HeroSection user={user} />
         <FeaturesSection />
       </main>
-    </>
+    </div>
   )
 } 

@@ -13,7 +13,7 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
+    <header className="bg-secondary/30 backdrop-blur-xl border-b border-border sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -30,19 +30,19 @@ export function Header({ user }: HeaderProps) {
               <>
                 <Link 
                   href="/dashboard" 
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Dashboard
                 </Link>
                 <Link 
                   href="/monitors" 
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Monitors
                 </Link>
                 <Link 
                   href="/alerts" 
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Alerts
                 </Link>
@@ -52,19 +52,19 @@ export function Header({ user }: HeaderProps) {
               <>
                 <Link 
                   href="#features" 
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Features
                 </Link>
                 <Link 
                   href="#pricing" 
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Pricing
                 </Link>
                 <Link 
                   href="#docs" 
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Docs
                 </Link>
@@ -79,7 +79,7 @@ export function Header({ user }: HeaderProps) {
               // Authenticated user menu
               <>
                 <div className="hidden sm:block">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="text-sm text-muted-foreground bg-secondary/30 px-3 py-1 rounded-full border border-border/50">
                     {user.email}
                   </span>
                 </div>

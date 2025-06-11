@@ -41,13 +41,18 @@ export function FeaturesSection() {
   ]
 
   return (
-    <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
+    <section id="features" className="py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-secondary/20">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="text-center mb-20">
+          <div className="mb-4 flex justify-center">
+            <div className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary backdrop-blur-sm border border-primary/20">
+              🚀 Powerful Features
+            </div>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6 tracking-tight">
             Everything you need to monitor your APIs
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Simple, powerful tools to keep your services running smoothly and your users happy.
           </p>
         </div>

@@ -41,7 +41,12 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-:root {
+/*
+=== CURRENT THEME (BACKUP) ===
+Keep this as a backup of your current working theme.
+Just uncomment and replace the :root and .dark sections below if you want to revert.
+
+BACKUP :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -76,7 +81,7 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
-.dark {
+BACKUP .dark {
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
@@ -108,6 +113,77 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
+}
+=== END BACKUP ===
+*/
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(96% 0.008 220);
+  --foreground: oklch(20% 0.01 220);
+  --card: oklch(94% 0.01 220);
+  --card-foreground: oklch(20% 0.01 220);
+  --popover: oklch(94% 0.01 220);
+  --popover-foreground: oklch(20% 0.01 220);
+  --primary: oklch(55% 0.15 240);
+  --primary-foreground: oklch(96% 0.008 220);
+  --secondary: oklch(91% 0.012 220);
+  --secondary-foreground: oklch(25% 0.012 220);
+  --muted: oklch(91% 0.012 220);
+  --muted-foreground: oklch(40% 0.015 220);
+  --accent: oklch(88% 0.015 220);
+  --accent-foreground: oklch(20% 0.01 220);
+  --destructive: oklch(62% 0.25 27);
+  --border: oklch(85% 0.015 220);
+  --input: oklch(85% 0.015 220);
+  --ring: oklch(55% 0.15 240);
+  --chart-1: oklch(62% 0.2 12);
+  --chart-2: oklch(75% 0.15 120);
+  --chart-3: oklch(65% 0.2 240);
+  --chart-4: oklch(75% 0.15 60);
+  --chart-5: oklch(70% 0.2 300);
+  --sidebar: oklch(94% 0.01 220);
+  --sidebar-foreground: oklch(20% 0.01 220);
+  --sidebar-primary: oklch(55% 0.15 240);
+  --sidebar-primary-foreground: oklch(96% 0.008 220);
+  --sidebar-accent: oklch(91% 0.012 220);
+  --sidebar-accent-foreground: oklch(25% 0.012 220);
+  --sidebar-border: oklch(85% 0.015 220);
+  --sidebar-ring: oklch(55% 0.15 240);
+}
+
+.dark {
+  --background: oklch(9% 0 0);
+  --foreground: oklch(98% 0 0);
+  --card: oklch(9% 0 0);
+  --card-foreground: oklch(98% 0 0);
+  --popover: oklch(9% 0 0);
+  --popover-foreground: oklch(98% 0 0);
+  --primary: oklch(70% 0.15 240);
+  --primary-foreground: oklch(9% 0 0);
+  --secondary: oklch(15% 0 0);
+  --secondary-foreground: oklch(98% 0 0);
+  --muted: oklch(15% 0 0);
+  --muted-foreground: oklch(65% 0 0);
+  --accent: oklch(15% 0 0);
+  --accent-foreground: oklch(98% 0 0);
+  --destructive: oklch(62% 0.25 27);
+  --border: oklch(15% 0 0);
+  --input: oklch(15% 0 0);
+  --ring: oklch(70% 0.15 240);
+  --chart-1: oklch(70% 0.3 12);
+  --chart-2: oklch(75% 0.25 120);
+  --chart-3: oklch(70% 0.15 240);
+  --chart-4: oklch(75% 0.2 60);
+  --chart-5: oklch(70% 0.25 300);
+  --sidebar: oklch(9% 0 0);
+  --sidebar-foreground: oklch(98% 0 0);
+  --sidebar-primary: oklch(70% 0.15 240);
+  --sidebar-primary-foreground: oklch(9% 0 0);
+  --sidebar-accent: oklch(15% 0 0);
+  --sidebar-accent-foreground: oklch(98% 0 0);
+  --sidebar-border: oklch(15% 0 0);
+  --sidebar-ring: oklch(70% 0.15 240);
 }
 
 @layer base {
