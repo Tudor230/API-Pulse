@@ -1,7 +1,13 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FeatureGlassCard } from "@/components/ui/glass-card"
+
+interface Feature {
+  title: string
+  description: string
+  icon: string
+}
 
 export function FeaturesSection() {
-  const features = [
+  const features: Feature[] = [
     {
       title: "Real-time Monitoring",
       description: "Check your APIs every minute with instant notifications when something goes wrong.",
@@ -48,21 +54,7 @@ export function FeaturesSection() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card key={index} className="border-gray-200 dark:border-gray-700 hover:shadow-lg dark:hover:shadow-gray-800/25 transition-shadow">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">{feature.icon}</span>
-                </div>
-                <CardTitle className="text-xl text-gray-900 dark:text-white">
-                  {feature.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-gray-600 dark:text-gray-300 text-base">
-                  {feature.description}
-                </CardDescription>
-              </CardContent>
-            </Card>
+            <FeatureGlassCard key={index} feature={feature} index={index} />
           ))}
         </div>
       </div>
