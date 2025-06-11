@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { LogoutButton } from "@/components/auth/logout-button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LogoFull, LogoMark } from "@/components/ui/logo"
 
 interface HeaderProps {
   user?: {
@@ -17,11 +18,8 @@ export function Header({ user }: HeaderProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href={user ? "/dashboard" : "/"} className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">P</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">API Pulse</span>
+            <Link href={user ? "/dashboard" : "/"}>
+              <LogoFull size="lg" animated />
             </Link>
           </div>
 
