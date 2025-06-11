@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { LogoutButton } from "@/components/auth/logout-button"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface HeaderProps {
   user?: {
@@ -11,7 +12,7 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -20,7 +21,7 @@ export function Header({ user }: HeaderProps) {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">P</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">API Pulse</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">API Pulse</span>
             </Link>
           </div>
 
@@ -31,19 +32,19 @@ export function Header({ user }: HeaderProps) {
               <>
                 <Link 
                   href="/dashboard" 
-                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                 >
                   Dashboard
                 </Link>
                 <Link 
                   href="/monitors" 
-                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                 >
                   Monitors
                 </Link>
                 <Link 
                   href="/alerts" 
-                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                 >
                   Alerts
                 </Link>
@@ -53,19 +54,19 @@ export function Header({ user }: HeaderProps) {
               <>
                 <Link 
                   href="#features" 
-                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                 >
                   Features
                 </Link>
                 <Link 
                   href="#pricing" 
-                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                 >
                   Pricing
                 </Link>
                 <Link 
                   href="#docs" 
-                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                 >
                   Docs
                 </Link>
@@ -75,11 +76,12 @@ export function Header({ user }: HeaderProps) {
 
           {/* Auth Buttons / User Menu */}
           <div className="flex items-center space-x-4">
+            <ThemeToggle />
             {user ? (
               // Authenticated user menu
               <>
                 <div className="hidden sm:block">
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
                     {user.email}
                   </span>
                 </div>
