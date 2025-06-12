@@ -125,6 +125,7 @@ export function SignUpForm() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isLoading}
+              className="border-muted-foreground/20"
             />
           </div>
 
@@ -139,6 +140,7 @@ export function SignUpForm() {
               required
               disabled={isLoading}
               minLength={6}
+              className="border-muted-foreground/20"
             />
           </div>
 
@@ -153,6 +155,7 @@ export function SignUpForm() {
               required
               disabled={isLoading}
               minLength={6}
+              className="border-muted-foreground/20"
             />
           </div>
 

@@ -101,6 +101,7 @@ export function SignInForm() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isLoading}
+              className="border-muted-foreground/20"
             />
           </div>
 
@@ -114,6 +115,7 @@ export function SignInForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
+              className="border-muted-foreground/20"
             />
           </div>
 

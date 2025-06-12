@@ -59,6 +59,7 @@ async function checkMonitor(monitor: Monitor, supabase: any) {
   const startTime = Date.now()
   let status: Monitor['status'] = 'down'
   let responseTime: number | null = null
+  let lastError: Error | null = null
 
   console.log(`Checking monitor: ${monitor.name} (${monitor.url})`)
 
@@ -82,6 +83,7 @@ async function checkMonitor(monitor: Monitor, supabase: any) {
     console.log(`Monitor ${monitor.name}: ${status} (${responseTime}ms)`)
     
   } catch (error) {
+    lastError = error instanceof Error ? error : new Error(String(error))
     responseTime = Date.now() - startTime
     
     // Check if the error is due to timeout (AbortError)
@@ -111,6 +113,24 @@ async function checkMonitor(monitor: Monitor, supabase: any) {
   if (updateError) {
     console.error(`Error updating monitor ${monitor.id}:`, updateError)
     throw updateError
+  }
+
+  // Save monitoring history for analytics and graphs
+  const { error: historyError } = await supabase
+    .from('monitoring_history')
+    .insert({
+      monitor_id: monitor.id,
+      user_id: monitor.user_id,
+      status,
+      response_time: responseTime,
+      status_code: null, // We could capture this from the fetch response if needed
+      error_message: status === 'down' || status === 'timeout' ? lastError?.toString() : null,
+      checked_at: new Date().toISOString()
+    })
+
+  if (historyError) {
+    console.error(`Error saving monitoring history for ${monitor.id}:`, historyError)
+    // Don't throw here - monitoring history is not critical for monitor operation
   }
 
   // If status changed from up to down, trigger alert

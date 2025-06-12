@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Monitor } from '@/lib/supabase-types'
-import { RefreshCw, ExternalLink } from 'lucide-react'
+import { RefreshCw, ExternalLink, BarChart3 } from 'lucide-react'
+import Link from 'next/link'
 
 interface MonitorsListProps {
   monitors: Monitor[]
@@ -139,6 +140,7 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
                 <TableHead>Response Time</TableHead>
                 <TableHead>Last Checked</TableHead>
                 <TableHead>Next Check</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -181,6 +183,14 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {formatDate(monitor.next_check_at)}
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/monitors/${monitor.id}`}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Analytics
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
