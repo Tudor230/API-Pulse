@@ -19,32 +19,32 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
     const incidents = []
     let currentIncident = null
     
-    // Sort by checked_at descending (newest first)
+    // Sort by checked_at ascending (oldest first)
     const sortedHistory = [...history].sort((a, b) => 
-      new Date(b.checked_at).getTime() - new Date(a.checked_at).getTime()
+      new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime()
     )
     
     for (const record of sortedHistory) {
       if (record.status === 'down' || record.status === 'timeout') {
         if (!currentIncident) {
-                     currentIncident = {
-             id: record.id,
-             startTime: record.checked_at,
-             endTime: null as string | null,
-             status: record.status,
-             duration: 0,
-             statusCode: record.status_code,
-             errorMessage: record.error_message,
-             checksCount: 1
-           }
+          currentIncident = {
+            id: record.id,
+            startTime: record.checked_at,
+            endTime: null as string | null,
+            status: record.status,
+            duration: 0,
+            statusCode: record.status_code,
+            errorMessage: record.error_message,
+            checksCount: 1
+          }
         } else {
-          currentIncident.startTime = record.checked_at // Keep updating to get the earliest time
+          currentIncident.endTime = null // still ongoing
           currentIncident.checksCount++
         }
       } else if (record.status === 'up' && currentIncident) {
-                 // End of incident
-         currentIncident.endTime = record.checked_at
-         currentIncident.duration = new Date(currentIncident.startTime).getTime() - new Date(record.checked_at).getTime()
+        // End of incident
+        currentIncident.endTime = record.checked_at
+        currentIncident.duration = new Date(record.checked_at).getTime() - new Date(currentIncident.startTime).getTime()
         incidents.push(currentIncident)
         currentIncident = null
       }
