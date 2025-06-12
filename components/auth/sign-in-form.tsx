@@ -76,7 +76,7 @@ export function SignInForm() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md bg-muted backdrop-blur-md border-muted-foreground/20 shadow-2xl">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">Sign in to API Pulse</CardTitle>
         <CardDescription className="text-center">
@@ -127,13 +127,13 @@ export function SignInForm() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-muted px-2 text-muted-foreground">Or</span>
           </div>
         </div>
 
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full !bg-primary/10 !hover:bg-primary/20 !border-primary/30 !hover:border-primary/50 shadow-md hover:shadow-lg !text-foreground"
           onClick={handleGoogleSignIn}
           disabled={isLoading}
         >
