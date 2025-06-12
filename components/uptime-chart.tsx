@@ -203,7 +203,7 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              domain={[0, 100]}
+              domain={[0, 105]}
               tickFormatter={(value) => `${value}%`}
             />
             <ChartTooltip
