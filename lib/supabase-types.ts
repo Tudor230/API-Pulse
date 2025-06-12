@@ -4,7 +4,7 @@ export interface Monitor {
   user_id: string
   name: string
   url: string
-  status: 'up' | 'down' | 'pending' | 'unknown'
+  status: 'up' | 'down' | 'timeout' | 'pending' | 'unknown'
   interval_minutes: number
   is_active: boolean
   response_time: number | null

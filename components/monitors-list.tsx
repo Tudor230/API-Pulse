@@ -19,6 +19,8 @@ function getStatusVariant(status: Monitor['status']) {
       return 'default' // Green
     case 'down':
       return 'destructive' // Red
+    case 'timeout':
+      return 'outline' // Orange-ish outline (custom styling needed)
     case 'pending':
       return 'secondary' // Gray
     case 'unknown':
@@ -29,8 +31,8 @@ function getStatusVariant(status: Monitor['status']) {
 }
 
 function getResponseTimeColor(responseTime: number) {
-  if (responseTime < 200) return 'text-success'
-  if (responseTime < 500) return 'text-warning'
+  if (responseTime <= 1000) return 'text-success'
+  if (responseTime > 1000 && responseTime <= 2000) return 'text-warning'
   return 'text-destructive'
 }
 
@@ -95,7 +97,7 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
             </div>
             <h3 className="text-lg font-medium text-foreground mb-2">No monitors yet</h3>
             <p className="text-muted-foreground mb-4">
-              Add your first monitor using the form above to start tracking your API's uptime and performance.
+              Add your first monitor using the form above to start tracking your API&apos;s uptime and performance.
             </p>
           </div>
         </CardContent>
@@ -157,7 +159,10 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(monitor.status)}>
+                    <Badge 
+                      variant={getStatusVariant(monitor.status)}
+                      className={monitor.status === 'timeout' ? 'border-warning text-warning bg-warning/10' : ''}
+                    >
                       {monitor.status.toUpperCase()}
                     </Badge>
                   </TableCell>

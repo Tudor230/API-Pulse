@@ -183,7 +183,7 @@ BACKUP .dark {
   --success: oklch(55% 0.15 150);
   --success-foreground: oklch(98% 0 0);
   --warning: oklch(75% 0.2 60);
-  --warning-foreground: oklch(9% 0 0);
+  --warning-foreground: oklch(98% 0 0);
   --info: oklch(70% 0.2 240);
   --info-foreground: oklch(9% 0 0);
   --border: oklch(15% 0 0);

@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create monitor status enum
-CREATE TYPE public.monitor_status AS ENUM ('up', 'down', 'pending', 'unknown');
+CREATE TYPE public.monitor_status AS ENUM ('up', 'down', 'pending', 'timeout', 'unknown');
 
 
 -- Create monitors table
@@ -82,8 +82,10 @@ SELECT
     COUNT(*) as total_monitors,
     COUNT(*) FILTER (WHERE status = 'up') as up_monitors,
     COUNT(*) FILTER (WHERE status = 'down') as down_monitors,
+    COUNT(*) FILTER (WHERE status = 'timeout') as timeout_monitors,
     COUNT(*) FILTER (WHERE is_active = true) as active_monitors,
-    AVG(response_time) FILTER (WHERE response_time IS NOT NULL) as avg_response_time
+    -- Calculate average response time only from successful 'up' status monitors
+    AVG(response_time) FILTER (WHERE status = 'up' AND response_time IS NOT NULL) as avg_response_time
 FROM public.monitors
 GROUP BY user_id;
 

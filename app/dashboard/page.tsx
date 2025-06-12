@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import AddMonitorForm from '@/components/add-monitor-form'
 import MonitorsList from '@/components/monitors-list'
+import ResponseTimeAnalytics from '@/components/response-time-analytics'
 import { Monitor } from '@/lib/supabase-types'
-import { Activity, AlertTriangle, CheckCircle, Clock, TrendingUp } from 'lucide-react'
+import { Activity, AlertTriangle, CheckCircle, Clock, Timer, TrendingUp } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -33,9 +34,12 @@ export default async function DashboardPage() {
   const totalMonitors = monitorsList.length
   const upMonitors = monitorsList.filter(m => m.status === 'up').length
   const downMonitors = monitorsList.filter(m => m.status === 'down').length
-  const pendingMonitors = monitorsList.filter(m => m.status === 'pending').length
-  const avgResponseTime = monitorsList.length > 0 
-    ? Math.round(monitorsList.reduce((acc, m) => acc + (m.response_time || 0), 0) / monitorsList.length)
+  const pendingMonitors = monitorsList.filter(m => m.status === 'pending').length  
+  const timeoutMonitors = monitorsList.filter(m => m.status === 'timeout').length
+  // Calculate average response time only from 'up' monitors with valid response times
+  const upMonitorsWithResponseTime = monitorsList.filter(m => m.status === 'up' && m.response_time !== null)
+  const avgResponseTime = upMonitorsWithResponseTime.length > 0 
+    ? Math.round(upMonitorsWithResponseTime.reduce((acc, m) => acc + (m.response_time || 0), 0) / upMonitorsWithResponseTime.length)
     : 0
 
   const uptimePercentage = totalMonitors > 0 ? Math.round((upMonitors / totalMonitors) * 100) : 0
@@ -53,7 +57,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Monitors</CardTitle>
@@ -95,6 +99,19 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Timeouts</CardTitle>
+            <Timer className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-warning">{timeoutMonitors}</div>
+            <p className="text-xs text-muted-foreground">
+              Monitors timing out
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Avg Response</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -118,6 +135,16 @@ export default async function DashboardPage() {
         </Alert>
       )}
 
+      {timeoutMonitors > 0 && (
+        <Alert variant="default" className="border-warning/20 bg-warning/10">
+          <Timer className="h-4 w-4 text-warning" />
+          <AlertDescription className="text-warning-foreground">
+            {timeoutMonitors} monitor{timeoutMonitors > 1 ? 's are' : ' is'} experiencing timeouts. 
+            These APIs may be slow or overloaded.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {pendingMonitors > 0 && (
         <Alert>
           <Clock className="h-4 w-4" />
@@ -132,7 +159,7 @@ export default async function DashboardPage() {
         <Alert>
           <Activity className="h-4 w-4" />
           <AlertDescription>
-            Welcome to API Pulse! Add your first monitor below to start tracking your API's uptime and performance.
+            Welcome to API Pulse! Add your first monitor below to start tracking your API&apos;s uptime and performance.
           </AlertDescription>
         </Alert>
       )}
@@ -144,55 +171,13 @@ export default async function DashboardPage() {
           <AddMonitorForm />
         </div>
 
-        {/* Quick Status Overview */}
+                {/* Response Time Analytics */}
         <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>System Status</CardTitle>
-              <CardDescription>
-                Real-time overview of all your monitored endpoints
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-success/10 rounded-lg border border-success/20">
-                  <div className="text-2xl font-bold text-success">
-                    {upMonitors}
-                  </div>
-                  <div className="text-sm text-foreground">
-                    Online
-                  </div>
-                </div>
-                
-                <div className="text-center p-4 bg-destructive/10 rounded-lg border border-destructive/20">
-                  <div className="text-2xl font-bold text-destructive">
-                    {downMonitors}
-                  </div>
-                  <div className="text-sm text-foreground">
-                    Offline
-                  </div>
-                </div>
-                
-                <div className="text-center p-4 bg-warning/10 rounded-lg border border-warning/20">
-                  <div className="text-2xl font-bold text-warning">
-                    {pendingMonitors}
-                  </div>
-                  <div className="text-sm text-foreground">
-                    Pending
-                  </div>
-                </div>
-                
-                <div className="text-center p-4 bg-info/10 rounded-lg border border-info/20">
-                  <div className="text-2xl font-bold text-info">
-                    {totalMonitors}
-                  </div>
-                  <div className="text-sm text-foreground">
-                    Total
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <ResponseTimeAnalytics 
+            monitors={monitorsList}
+            avgResponseTime={avgResponseTime}
+            upMonitorsWithResponseTime={upMonitorsWithResponseTime}
+          />
         </div>
       </div>
 
