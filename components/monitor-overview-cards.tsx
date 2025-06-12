@@ -19,16 +19,19 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
   const getResponseTimeTrend = () => {
     if (responseTrend.length < 2) return null
     
-    const recent = responseTrend.slice(0, Math.ceil(responseTrend.length / 2))
-    const older = responseTrend.slice(Math.ceil(responseTrend.length / 2))
+    // Split data into two equal halves
+    const midPoint = Math.floor(responseTrend.length / 2)
+    const recent = responseTrend.slice(0, midPoint)
+    const older = responseTrend.slice(midPoint)
     
     const recentAvg = recent.reduce((sum, item) => sum + (item.response_time || 0), 0) / recent.length
     const olderAvg = older.reduce((sum, item) => sum + (item.response_time || 0), 0) / older.length
     
+    // For response times, a negative change is improvement (faster response)
     const percentChange = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0
     
     return {
-      isImproving: percentChange < 0,
+      isImproving: percentChange < 0, // Negative change means improvement
       change: Math.abs(percentChange)
     }
   }
