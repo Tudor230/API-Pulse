@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +14,7 @@ interface AddMonitorFormProps {
 }
 
 export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: '',
     url: '',
@@ -45,6 +47,13 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
 
       setSuccess('Monitor created successfully!')
       setFormData({ name: '', url: '', interval_minutes: 5 })
+      
+      // Refresh the page to show updated data
+      setTimeout(() => {
+        router.refresh()
+        setSuccess(null)
+      }, 2000)
+      
       onSuccess?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred')
@@ -54,7 +63,7 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Add New Monitor</CardTitle>
         <CardDescription>
@@ -114,7 +123,7 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
           )}
 
           {success && (
-            <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
+            <Alert className="border-success/20 bg-success/10 text-success">
               <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
