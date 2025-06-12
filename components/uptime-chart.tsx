@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts'
-import { Activity, TrendingUp, TrendingDown } from 'lucide-react'
+import { Activity, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 
 interface UptimeChartProps {
@@ -153,7 +153,12 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
               </span>
               {trend && (
                 <>
-                  {trend.isImproving ? (
+                  {trend.change === 0 ? (
+                    <span className="ml-2 inline-flex items-center gap-1 text-muted-foreground">
+                      <ArrowRight className="h-3 w-3" />
+                      No trend
+                    </span>
+                  ) : trend.isImproving ? (
                     <span className="ml-2 inline-flex items-center gap-1 text-success">
                       <TrendingUp className="h-3 w-3" />
                       Trending up by {trend.change.toFixed(1)}%
@@ -203,7 +208,7 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              domain={[0, 105]}
+              domain={[0, 100]}
               tickFormatter={(value) => `${value}%`}
             />
             <ChartTooltip

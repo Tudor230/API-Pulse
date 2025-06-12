@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'recharts'
-import { TrendingUp, TrendingDown, Activity } from 'lucide-react'
+import { TrendingUp, TrendingDown, ArrowRight, Activity } from 'lucide-react'
 import { useState } from 'react'
 
 interface ResponseTimeChartProps {
@@ -154,7 +154,12 @@ export default function ResponseTimeChart({ data, title, avgResponseTime, detail
               Average response time: {safeAvgResponseTime.toFixed(0)}ms
               {stats && (
                 <>
-                  {stats.isImproving ? (
+                  {stats.trendChange === 0 ? (
+                    <span className="ml-2 inline-flex items-center gap-1 text-muted-foreground">
+                      <ArrowRight className="h-3 w-3" />
+                      No trend
+                    </span>
+                  ) : stats.isImproving ? (
                     <span className="ml-2 inline-flex items-center gap-1 text-success">
                       <TrendingDown className="h-3 w-3" />
                       Trending down by {stats.trendChange.toFixed(1)}%

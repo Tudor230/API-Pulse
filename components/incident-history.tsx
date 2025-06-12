@@ -150,7 +150,7 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               {incidents.map((incident, index) => (
                 <div key={incident.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center gap-3">

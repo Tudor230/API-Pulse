@@ -3,7 +3,7 @@
 import { Monitor, UptimeStats, ResponseTimeTrend } from '@/lib/supabase-types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Activity, Clock, Zap, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { Activity, Clock, Zap, TrendingUp, TrendingDown, ArrowRight, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 interface MonitorOverviewCardsProps {
   monitor: Monitor
@@ -15,24 +15,27 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
   // Ensure avg_response_time is never null
   const safeAvgResponseTime = stats.avg_response_time ?? 0
 
-  // Calculate trend for response time
+  // Calculate trend for response time (match response time chart logic)
   const getResponseTimeTrend = () => {
-    if (responseTrend.length < 2) return null
-    
-    // Split data into two equal halves
-    const midPoint = Math.floor(responseTrend.length / 2)
-    const recent = responseTrend.slice(0, midPoint)
-    const older = responseTrend.slice(midPoint)
-    
-    const recentAvg = recent.reduce((sum, item) => sum + (item.response_time || 0), 0) / recent.length
-    const olderAvg = older.reduce((sum, item) => sum + (item.response_time || 0), 0) / older.length
-    
-    // For response times, a negative change is improvement (faster response)
-    const percentChange = olderAvg > 0 ? ((recentAvg - olderAvg) / olderAvg) * 100 : 0
-    
+    if (!responseTrend || responseTrend.length < 2) return null
+
+    // Sort by checked_at ascending (oldest to newest)
+    const sorted = [...responseTrend].sort((a, b) => new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime())
+    const chartData = sorted.filter(item => item.response_time !== null)
+
+    if (chartData.length < 2) return null
+
+    const firstHalf = chartData.slice(0, Math.ceil(chartData.length / 2))
+    const secondHalf = chartData.slice(Math.ceil(chartData.length / 2))
+
+    const firstAvg = firstHalf.reduce((sum, item) => sum + (item.response_time || 0), 0) / firstHalf.length
+    const secondAvg = secondHalf.reduce((sum, item) => sum + (item.response_time || 0), 0) / secondHalf.length
+
+    const trendChange = firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg) * 100 : 0
+
     return {
-      isImproving: percentChange < 0, // Negative change means improvement
-      change: Math.abs(percentChange)
+      isImproving: trendChange < 0,
+      change: Math.abs(trendChange)
     }
   }
 
@@ -128,12 +131,14 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
             </div>
             {responseTrend_calc && (
               <div className="flex items-center gap-1">
-                {responseTrend_calc.isImproving ? (
+                {responseTrend_calc.change === 0 ? (
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                ) : responseTrend_calc.isImproving ? (
                   <TrendingDown className="h-4 w-4 text-success" />
                 ) : (
                   <TrendingUp className="h-4 w-4 text-destructive" />
                 )}
-                <span className={`text-xs ${responseTrend_calc.isImproving ? 'text-success' : 'text-destructive'}`}>
+                <span className={`text-xs ${responseTrend_calc.change === 0 ? 'text-muted-foreground' : responseTrend_calc.isImproving ? 'text-success' : 'text-destructive'}`}>
                   {responseTrend_calc.change.toFixed(1)}%
                 </span>
               </div>
