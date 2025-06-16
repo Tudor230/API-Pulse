@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase-admin'
 import { NextResponse } from 'next/server'
-import { Monitor } from '@/lib/supabase-types'
+import { Monitor, MonitorAlertRule, NotificationChannel, AlertLog } from '@/lib/supabase-types'
+import { sendAlert, AlertContext } from '@/lib/alert-service'
 
 export async function GET(request: Request) {
   // Verify this is a legitimate cron request from AWS Scheduler
@@ -133,28 +134,196 @@ async function checkMonitor(monitor: Monitor, supabase: any) {
     // Don't throw here - monitoring history is not critical for monitor operation
   }
 
-  // If status changed from up to down, trigger alert
-  if (monitor.status === 'up' && status === 'down') {
-    await triggerAlert(monitor, supabase)
+  // Check if we should trigger alerts for status changes
+  const shouldAlert = (
+    (monitor.status === 'up' && (status === 'down' || status === 'timeout')) || // Down/timeout alerts
+    (monitor.status === 'down' && status === 'up') || // Recovery alerts
+    (monitor.status === 'timeout' && status === 'up') // Recovery from timeout
+  )
+  console.log(shouldAlert, monitor.status, status)
+  if (shouldAlert) {
+    await triggerAlerts(monitor, status, supabase)
   }
 
   return { id: monitor.id, status, responseTime }
 }
 
-async function triggerAlert(monitor: Monitor, supabase: any) {
-  // Log the downtime alert
-  console.log(`🚨 ALERT: Monitor "${monitor.name}" is down! URL: ${monitor.url}`)
+async function triggerAlerts(monitor: Monitor, newStatus: Monitor['status'], supabase: any) {
+  console.log(`🔔 Checking alerts for monitor "${monitor.name}" (${monitor.status} → ${newStatus})`)
   
-  // TODO: Implement additional alerting logic here
-  // This could include:
-  // - Sending emails via Resend
-  // - Creating notifications in the database
-  // - Sending webhooks to external services
-  // - Integrating with Slack, Discord, etc.
+  try {
+    // Get all active alert rules for this monitor
+    const { data: alertRules, error: rulesError } = await supabase
+      .from('monitor_alert_rules')
+      .select(`
+        *,
+        notification_channels (*)
+      `)
+      .eq('monitor_id', monitor.id)
+      .eq('is_active', true)
+      .eq('notification_channels.is_active', true)
+      .eq('notification_channels.is_verified', true)
+
+    if (rulesError) {
+      console.error('Error fetching alert rules:', rulesError)
+      return
+    }
+
+    if (!alertRules || alertRules.length === 0) {
+      console.log(`No active alert rules found for monitor ${monitor.id}`)
+      return
+    }
+
+    // Count consecutive failures for this monitor
+    const { data: recentHistory, error: historyError } = await supabase
+      .from('monitoring_history')
+      .select('status')
+      .eq('monitor_id', monitor.id)
+      .order('checked_at', { ascending: false })
+      .limit(10)
+
+    const consecutiveFailures = countConsecutiveFailures(recentHistory || [])
+
+    // Process each alert rule
+    for (const rule of alertRules) {
+      const channel = rule.notification_channels
+
+      // Check if this rule should trigger based on status change
+      const shouldTrigger = shouldTriggerForRule(rule, monitor.status, newStatus)
+      
+      if (!shouldTrigger) {
+        continue
+      }
+
+      // Check consecutive failures threshold
+      if (consecutiveFailures < rule.consecutive_failures_threshold) {
+        console.log(`Consecutive failures (${consecutiveFailures}) below threshold (${rule.consecutive_failures_threshold}) for rule ${rule.id}`)
+        continue
+      }
+
+      // Check cooldown period
+      const { data: shouldSend } = await supabase.rpc('should_send_alert', {
+        p_monitor_id: monitor.id,
+        p_notification_channel_id: channel.id,
+        p_cooldown_minutes: rule.cooldown_minutes
+      })
+
+      if (!shouldSend) {
+        console.log(`Alert suppressed due to cooldown for channel ${channel.id}`)
+        continue
+      }
+
+      // Create alert context
+      const alertContext: AlertContext = {
+        monitor,
+        channel,
+        triggerStatus: newStatus,
+        previousStatus: monitor.status,
+        consecutiveFailures,
+        responseTime: undefined // Will be set if available
+      }
+
+      // Log the alert attempt
+      const { data: alertLog, error: logError } = await supabase
+        .from('alert_logs')
+        .insert({
+          monitor_id: monitor.id,
+          monitor_alert_rule_id: rule.id,
+          notification_channel_id: channel.id,
+          user_id: monitor.user_id,
+          alert_type: channel.type,
+          status: 'pending',
+          trigger_status: newStatus,
+          previous_status: monitor.status,
+          consecutive_failures: consecutiveFailures,
+          message: generateAlertMessage(monitor, newStatus, monitor.status),
+        })
+        .select()
+        .single()
+
+      if (logError) {
+        console.error('Error creating alert log:', logError)
+        continue
+      }
+
+      // Send the alert
+      console.log(`📤 Sending ${channel.type} alert for monitor "${monitor.name}" to ${channel.name}`)
+      
+      try {
+        const result = await sendAlert(alertContext)
+        
+        // Update alert log with result
+        await supabase
+          .from('alert_logs')
+          .update({
+            status: result.success ? 'sent' : 'failed',
+            error_message: result.error || null,
+            sent_at: result.success ? new Date().toISOString() : null,
+          })
+          .eq('id', alertLog.id)
+
+        if (result.success) {
+          console.log(`✅ Alert sent successfully via ${channel.type} (${result.messageId})`)
+        } else {
+          console.error(`❌ Alert failed via ${channel.type}: ${result.error}`)
+        }
+        
+      } catch (error) {
+        console.error(`Alert sending failed for channel ${channel.id}:`, error)
+        
+        // Update alert log with error
+        await supabase
+          .from('alert_logs')
+          .update({
+            status: 'failed',
+            error_message: error instanceof Error ? error.message : 'Unknown error',
+          })
+          .eq('id', alertLog.id)
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error in triggerAlerts:', error)
+  }
+}
+
+function shouldTriggerForRule(rule: MonitorAlertRule, oldStatus: Monitor['status'], newStatus: Monitor['status']): boolean {
+  // Check for down alerts
+  if ((newStatus === 'down' || newStatus === 'timeout') && rule.alert_on_down) {
+    return true
+  }
   
-  // For now, we'll just log the alert
-  // In a production system, you would add:
-  // - Email notifications to the monitor owner
-  // - Webhook calls to external services
-  // - In-app notifications
+  // Check for timeout alerts (if separate from down alerts)
+  if (newStatus === 'timeout' && rule.alert_on_timeout) {
+    return true
+  }
+  
+  // Check for recovery alerts
+  if ((oldStatus === 'down' || oldStatus === 'timeout') && newStatus === 'up' && rule.alert_on_up) {
+    return true
+  }
+  
+  return false
+}
+
+function countConsecutiveFailures(history: { status: string }[]): number {
+  let count = 0
+  for (const record of history) {
+    if (record.status === 'down' || record.status === 'timeout') {
+      count++
+    } else {
+      break
+    }
+  }
+  return Math.max(count, 1) // At least 1 for the current failure
+}
+
+function generateAlertMessage(monitor: Monitor, triggerStatus: Monitor['status'], previousStatus: Monitor['status'] | null): string {
+  const isRecovery = (previousStatus === 'down' || previousStatus === 'timeout') && triggerStatus === 'up'
+  
+  if (isRecovery) {
+    return `Monitor "${monitor.name}" has recovered and is now ${triggerStatus.toUpperCase()}`
+  }
+  
+  return `Monitor "${monitor.name}" is now ${triggerStatus.toUpperCase()}`
 } 
