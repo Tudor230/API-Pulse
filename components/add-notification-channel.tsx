@@ -125,7 +125,7 @@ export default function AddNotificationChannel({ onSuccess }: AddNotificationCha
               required
             />
             <p className="text-sm text-muted-foreground">
-              You'll receive a verification email before alerts can be sent.
+              You&apos;ll receive a verification email before alerts can be sent.
             </p>
           </div>
         )
@@ -142,7 +142,7 @@ export default function AddNotificationChannel({ onSuccess }: AddNotificationCha
               required
             />
             <p className="text-sm text-muted-foreground">
-              Use international format (e.g., +1234567890). You'll receive a verification SMS.
+              Use international format (e.g., +1234567890). You&apos;ll receive a verification SMS.
             </p>
           </div>
         )

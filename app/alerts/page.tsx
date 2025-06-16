@@ -48,7 +48,7 @@ export default async function AlertsPage() {
             <Alert className="mb-8">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                You don't have any monitors yet. 
+                You don&apos;t have any monitors yet. 
                 <a href="/dashboard" className="underline ml-1">Create your first monitor</a> to start receiving alerts.
               </AlertDescription>
             </Alert>
