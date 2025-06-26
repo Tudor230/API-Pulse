@@ -15,8 +15,13 @@ import IncidentHistory from '@/components/incident-history'
 import MonitorSettings from '@/components/monitor-settings'
 import MonitorChartWrapper from '@/components/monitor-chart-wrapper'
 
-export default async function MonitorPage({ params }: { params: { id: string } }) {
-  const resolvedParams = await params
+interface MonitorPageProps {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function MonitorPage({ params }: MonitorPageProps) {
+  const { id } = await params;
   const supabase = await createClient()
 
   // Check authentication
@@ -30,7 +35,7 @@ export default async function MonitorPage({ params }: { params: { id: string } }
   const { data: monitor, error: monitorError } = await supabase
     .from('monitors')
     .select('*')
-    .eq('id', resolvedParams.id)
+    .eq('id', id)
     .single()
 
   if (monitorError || !monitor) {
@@ -43,9 +48,9 @@ export default async function MonitorPage({ params }: { params: { id: string } }
     { data: hourlyData },
     { data: uptimeStatsResult }
   ] = await Promise.all([
-    supabase.rpc('get_response_time_trend', { p_monitor_id: resolvedParams.id, p_hours: 24 }),
-    supabase.rpc('get_hourly_monitor_data', { p_monitor_id: resolvedParams.id, p_hours: 24 }),
-    supabase.rpc('get_uptime_stats', { p_monitor_id: resolvedParams.id, p_hours: 24 })
+    supabase.rpc('get_response_time_trend', { p_monitor_id: id, p_hours: 24 }),
+    supabase.rpc('get_hourly_monitor_data', { p_monitor_id: id, p_hours: 24 }),
+    supabase.rpc('get_uptime_stats', { p_monitor_id: id, p_hours: 24 })
   ]);
 
   const stats = uptimeStatsResult?.[0] || {
@@ -67,7 +72,7 @@ export default async function MonitorPage({ params }: { params: { id: string } }
   const { data: history } = await supabase
     .from('monitoring_history')
     .select('*')
-    .eq('monitor_id', resolvedParams.id)
+    .eq('monitor_id', id)
     .gte('checked_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
     .order('checked_at', { ascending: false })
     .limit(100)
