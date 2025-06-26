@@ -42,7 +42,7 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
   const responseTrend_calc = getResponseTimeTrend()
 
   const formatUptime = (percentage: number) => {
-    return percentage.toFixed(2) + '%'
+    return (percentage ?? 0).toFixed(2) + '%'
   }
 
   const formatResponseTime = (ms: number) => {
@@ -51,8 +51,9 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
   }
 
   const getUptimeColor = (percentage: number) => {
-    if (percentage >= 99.9) return 'text-success'
-    if (percentage >= 95) return 'text-warning'
+    const p = percentage ?? 0
+    if (p >= 99.9) return 'text-success'
+    if (p >= 95) return 'text-warning'
     return 'text-destructive'
   }
 
