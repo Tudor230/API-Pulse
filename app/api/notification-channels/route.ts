@@ -88,7 +88,7 @@ export async function POST(request: Request) {
         alert_on_down: true,
         alert_on_up: true,
         alert_on_timeout: true,
-        consecutive_failures_threshold: 1,
+        consecutive_failures_threshold: 5,
         cooldown_minutes: 60,
         is_active: true,
       }))

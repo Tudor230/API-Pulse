@@ -8,22 +8,21 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'rec
 import { TrendingUp, TrendingDown, ArrowRight, Activity } from 'lucide-react'
 import { useState } from 'react'
 
+interface TimeFrameOption {
+  value: string;
+  label: string;
+  hours: number;
+}
+
 interface ResponseTimeChartProps {
   data: ResponseTimeTrend[]
   title: string
   avgResponseTime: number
   detailed?: boolean
+  timeFrame: string
+  onTimeFrameChangeAction: (value: string) => void
+  timeFrameOptions: TimeFrameOption[]
 }
-
-type TimeFrame = '1h' | '6h' | '24h' | '7d' | '30d'
-
-const timeFrameOptions = [
-  { value: '1h', label: 'Last Hour', hours: 1 },
-  { value: '6h', label: 'Last 6 Hours', hours: 6 },
-  { value: '24h', label: 'Last 24 Hours', hours: 24 },
-  { value: '7d', label: 'Last 7 Days', hours: 24 * 7 },
-  { value: '30d', label: 'Last 30 Days', hours: 24 * 30 },
-]
 
 const chartConfig = {
   responseTime: {
@@ -32,44 +31,59 @@ const chartConfig = {
   },
 }
 
-export default function ResponseTimeChart({ data, title, avgResponseTime, detailed = false }: ResponseTimeChartProps) {
-  const [selectedTimeFrame, setSelectedTimeFrame] = useState<TimeFrame>('24h')
-  
+export default function ResponseTimeChart({
+  data,
+  title,
+  avgResponseTime,
+  detailed = false,
+  timeFrame,
+  onTimeFrameChangeAction,
+  timeFrameOptions
+}: ResponseTimeChartProps) {
   // Ensure avgResponseTime is never null
   const safeAvgResponseTime = avgResponseTime ?? 0
 
-  // Filter data based on selected time frame
-  const getFilteredData = () => {
-    const selectedOption = timeFrameOptions.find(opt => opt.value === selectedTimeFrame)
-    if (!selectedOption) return data
-
-    const hoursAgo = selectedOption.hours
-    const cutoffTime = new Date(Date.now() - (hoursAgo * 60 * 60 * 1000))
-    
-    return data.filter(item => new Date(item.checked_at) >= cutoffTime)
-  }
-
-  const filteredData = getFilteredData()
-
   // Transform and sort data for the chart
-  const chartData = filteredData
-    .filter(item => item.response_time !== null)
-    .map(item => {
-      const date = new Date(item.checked_at)
+  const chartData = (() => {
+    const sourceData = (data || []).filter(item => item.response_time !== null);
+    if (sourceData.length === 0) return [];
+
+    if (timeFrame === '7d' || timeFrame === '30d') {
+      const dailyData = sourceData.reduce((acc, item) => {
+        const day = new Date(item.checked_at).toISOString().split('T')[0];
+        if (!acc[day]) {
+          acc[day] = { total: 0, count: 0 };
+        }
+        acc[day].total += item.response_time!;
+        acc[day].count++;
+        return acc;
+      }, {} as Record<string, { total: number; count: number }>);
+
+      return Object.entries(dailyData).map(([day, { total, count }]) => {
+        const date = new Date(day);
+        return {
+          time: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          fullTime: date.toISOString(),
+          responseTime: total / count,
+          status: 'up', // Status is aggregated, so we simplify
+        };
+      });
+    }
+
+    return sourceData.map(item => {
+      const date = new Date(item.checked_at);
       return {
-        time: selectedTimeFrame === '7d' || selectedTimeFrame === '30d' 
-          ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          : date.toLocaleTimeString('en-US', { 
-              hour: '2-digit', 
-              minute: '2-digit',
-              hour12: false 
-            }),
+        time: date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }),
         fullTime: date.toLocaleString(),
         responseTime: item.response_time,
-        status: item.status
-      }
-    })
-    .sort((a, b) => new Date(a.fullTime).getTime() - new Date(b.fullTime).getTime()) // Sort oldest to newest
+        status: item.status,
+      };
+    });
+  })().sort((a, b) => new Date(a.fullTime).getTime() - new Date(b.fullTime).getTime());
 
   // Calculate statistics
   const getStats = () => {
@@ -98,7 +112,7 @@ export default function ResponseTimeChart({ data, title, avgResponseTime, detail
 
   const stats = getStats()
 
-  if (chartData.length === 0) {
+  if (chartData.length === 0 && !detailed) {
     return (
       <Card>
         <CardHeader>
@@ -112,7 +126,7 @@ export default function ResponseTimeChart({ data, title, avgResponseTime, detail
                 Response time trends and performance analysis
               </CardDescription>
             </div>
-            <Select value={selectedTimeFrame} onValueChange={(value: TimeFrame) => setSelectedTimeFrame(value)}>
+            <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
@@ -174,7 +188,7 @@ export default function ResponseTimeChart({ data, title, avgResponseTime, detail
               )}
             </CardDescription>
           </div>
-          <Select value={selectedTimeFrame} onValueChange={(value: TimeFrame) => setSelectedTimeFrame(value)}>
+          <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>

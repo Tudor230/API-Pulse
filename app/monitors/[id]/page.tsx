@@ -11,12 +11,11 @@ import { ArrowLeft, ExternalLink, Activity, Clock, Zap, AlertCircle, CheckCircle
 import { Header } from '@/components/header'
 import { StaticBackground } from '@/components/static-background'
 import MonitorOverviewCards from '@/components/monitor-overview-cards'
-import ResponseTimeChart from '@/components/response-time-chart'
-import UptimeChart from '@/components/uptime-chart'
 import IncidentHistory from '@/components/incident-history'
 import MonitorSettings from '@/components/monitor-settings'
+import MonitorChartWrapper from '@/components/monitor-chart-wrapper'
 
-export default async function MonitorPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function MonitorPage({ params }: { params: { id: string } }) {
   const resolvedParams = await params
   const supabase = await createClient()
 
@@ -38,37 +37,18 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
     notFound()
   }
 
-  // Get monitoring history for the last 24 hours
-  const { data: history } = await supabase
-    .from('monitoring_history')
-    .select('*')
-    .eq('monitor_id', resolvedParams.id)
-    .gte('checked_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-    .order('checked_at', { ascending: false })
-    .limit(100)
+  // Initial data fetch for the last 24 hours
+  const [
+    { data: responseTrend },
+    { data: hourlyData },
+    { data: uptimeStatsResult }
+  ] = await Promise.all([
+    supabase.rpc('get_response_time_trend', { p_monitor_id: resolvedParams.id, p_hours: 24 }),
+    supabase.rpc('get_hourly_monitor_data', { p_monitor_id: resolvedParams.id, p_hours: 24 }),
+    supabase.rpc('get_uptime_stats', { p_monitor_id: resolvedParams.id, p_hours: 24 })
+  ]);
 
-  // Get response time trend data
-  const { data: responseTrend } = await supabase
-    .rpc('get_response_time_trend', {
-      p_monitor_id: resolvedParams.id,
-      p_hours: 24
-    })
-
-  // Get uptime statistics
-  const { data: uptimeStats } = await supabase
-    .rpc('get_uptime_stats', {
-      p_monitor_id: resolvedParams.id,
-      p_hours: 24
-    })
-
-  // Get hourly data for detailed charts
-  const { data: hourlyData } = await supabase
-    .rpc('get_hourly_monitor_data', {
-      p_monitor_id: resolvedParams.id,
-      p_hours: 24
-    })
-
-  const stats = uptimeStats?.[0] || {
+  const stats = uptimeStatsResult?.[0] || {
     total_checks: 0,
     successful_checks: 0,
     failed_checks: 0,
@@ -77,8 +57,20 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
     avg_response_time: 0
   }
 
-  // Ensure avg_response_time is never null
-  const safeAvgResponseTime = stats.avg_response_time ?? 0
+  const initialData = {
+    responseTrend: responseTrend || [],
+    hourlyData: hourlyData || [],
+    stats: stats
+  }
+
+  // Get monitoring history for incidents tab (last 7 days)
+  const { data: history } = await supabase
+    .from('monitoring_history')
+    .select('*')
+    .eq('monitor_id', resolvedParams.id)
+    .gte('checked_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+    .order('checked_at', { ascending: false })
+    .limit(100)
 
   const getStatusIcon = (status: Monitor['status']) => {
     switch (status) {
@@ -177,8 +169,8 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
               {/* Overview Cards */}
               <MonitorOverviewCards
                 monitor={monitor}
-                stats={{ ...stats, avg_response_time: safeAvgResponseTime }}
-                responseTrend={responseTrend || []}
+                stats={initialData.stats}
+                responseTrend={initialData.responseTrend}
               />
 
               {/* Main Content Tabs */}
@@ -204,33 +196,53 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
 
                 <TabsContent value="overview" className="mt-6">
                   <div className="grid gap-6 lg:grid-cols-2">
-                    <ResponseTimeChart
-                      data={responseTrend || []}
+                    <MonitorChartWrapper
+                      monitorId={monitor.id}
+                      initialData={{
+                        responseTrend: initialData.responseTrend,
+                        hourlyData: initialData.hourlyData,
+                        stats: initialData.stats
+                      }}
                       title="Response Time Trend"
-                      avgResponseTime={safeAvgResponseTime}
+                      chartType="response-time"
                     />
-                    <UptimeChart
-                      data={hourlyData || []}
+                    <MonitorChartWrapper
+                      monitorId={monitor.id}
+                      initialData={{
+                        responseTrend: initialData.responseTrend,
+                        hourlyData: initialData.hourlyData,
+                        stats: initialData.stats
+                      }}
                       title="Uptime Overview"
-                      uptimePercentage={stats.uptime_percentage}
+                      chartType="uptime"
                     />
                   </div>
                 </TabsContent>
 
                 <TabsContent value="response" className="mt-6">
-                  <ResponseTimeChart
-                    data={responseTrend || []}
+                  <MonitorChartWrapper
+                    monitorId={monitor.id}
+                    initialData={{
+                      responseTrend: initialData.responseTrend,
+                      hourlyData: initialData.hourlyData,
+                      stats: initialData.stats
+                    }}
                     title="Detailed Response Time Analysis"
-                    avgResponseTime={safeAvgResponseTime}
+                    chartType="response-time"
                     detailed={true}
                   />
                 </TabsContent>
 
                 <TabsContent value="uptime" className="mt-6">
-                  <UptimeChart
-                    data={hourlyData || []}
+                  <MonitorChartWrapper
+                    monitorId={monitor.id}
+                    initialData={{
+                      responseTrend: initialData.responseTrend,
+                      hourlyData: initialData.hourlyData,
+                      stats: initialData.stats
+                    }}
                     title="Detailed Uptime Analysis"
-                    uptimePercentage={stats.uptime_percentage}
+                    chartType="uptime"
                     detailed={true}
                   />
                 </TabsContent>

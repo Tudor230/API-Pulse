@@ -8,22 +8,21 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ReferenceLine } from 'rec
 import { Activity, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 
+interface TimeFrameOption {
+  value: string;
+  label: string;
+  hours: number;
+}
+
 interface UptimeChartProps {
   data: HourlyMonitorData[]
   title: string
   uptimePercentage: number
   detailed?: boolean
+  timeFrame: string
+  onTimeFrameChangeAction: (value: string) => void
+  timeFrameOptions: TimeFrameOption[]
 }
-
-type TimeFrame = '1h' | '6h' | '24h' | '7d' | '30d'
-
-const timeFrameOptions = [
-  { value: '1h', label: 'Last Hour', hours: 1 },
-  { value: '6h', label: 'Last 6 Hours', hours: 6 },
-  { value: '24h', label: 'Last 24 Hours', hours: 24 },
-  { value: '7d', label: 'Last 7 Days', hours: 24 * 7 },
-  { value: '30d', label: 'Last 30 Days', hours: 24 * 30 },
-]
 
 const chartConfig = {
   uptime: {
@@ -32,49 +31,61 @@ const chartConfig = {
   },
 }
 
-export default function UptimeChart({ data, title, uptimePercentage, detailed = false }: UptimeChartProps) {
-  const [selectedTimeFrame, setSelectedTimeFrame] = useState<TimeFrame>('24h')
+export default function UptimeChart({
+  data,
+  title,
+  uptimePercentage,
+  detailed = false,
+  timeFrame,
+  onTimeFrameChangeAction,
+  timeFrameOptions
+}: UptimeChartProps) {
 
-  // Filter data based on selected time frame
-  const getFilteredData = () => {
-    const selectedOption = timeFrameOptions.find(opt => opt.value === selectedTimeFrame)
-    if (!selectedOption) return data
+  const transformedData = (() => {
+    const sourceData = data || [];
+    if (sourceData.length === 0) return [];
 
-    const hoursAgo = selectedOption.hours
-    const cutoffTime = new Date(Date.now() - (hoursAgo * 60 * 60 * 1000))
-    
-    return data.filter(item => new Date(item.hour_bucket) >= cutoffTime)
-  }
+    if (timeFrame === '7d' || timeFrame === '30d') {
+      const dailyData = sourceData.reduce((acc, item) => {
+        const day = new Date(item.hour_bucket).toISOString().split('T')[0];
+        if (!acc[day]) {
+          acc[day] = { successful_checks: 0, total_checks: 0 };
+        }
+        acc[day].successful_checks += (item.uptime_percentage / 100) * item.total_checks;
+        acc[day].total_checks += item.total_checks;
+        return acc;
+      }, {} as Record<string, { successful_checks: number; total_checks: number }>);
 
-  const filteredData = getFilteredData()
+      return Object.entries(dailyData).map(([day, { successful_checks, total_checks }]) => {
+        const date = new Date(day);
+        return {
+          time: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          fullTime: date.toISOString(),
+          uptime: total_checks > 0 ? (successful_checks / total_checks) * 100 : 0,
+          checks: total_checks,
+        };
+      });
+    }
 
-  // Transform data for the chart - ensure we have valid data
-  const chartData = (filteredData || [])
-    .filter(item => item && item.hour_bucket) // Filter out null/undefined items
-    .map(item => {
-      const date = new Date(item.hour_bucket)
+    return sourceData.map(item => {
+      const date = new Date(item.hour_bucket);
       return {
-        hour: selectedTimeFrame === '7d' || selectedTimeFrame === '30d' 
-          ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-          : date.toLocaleTimeString('en-US', { 
-              hour: '2-digit', 
-              minute: '2-digit',
-              hour12: false 
-            }),
+        time: date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false }),
         fullTime: date.toLocaleString(),
-        uptime: Math.min(100, Math.max(0, Math.round((item.uptime_percentage || 0) * 10) / 10)), // Ensure 0-100 range
-        responseTime: item.avg_response_time,
-        checks: item.total_checks || 0
-      }
-    })
-    .sort((a, b) => new Date(a.fullTime).getTime() - new Date(b.fullTime).getTime()) // Sort oldest to newest
+        uptime: item.uptime_percentage,
+        checks: item.total_checks,
+      };
+    });
+  })().sort((a, b) => new Date(a.fullTime).getTime() - new Date(b.fullTime).getTime());
+
+  const safeUptimePercentage = uptimePercentage ?? 0
 
   // Calculate trend
   const getTrend = () => {
-    if (chartData.length < 2) return null
+    if (transformedData.length < 2) return null
     
-    const firstHalf = chartData.slice(0, Math.ceil(chartData.length / 2))
-    const secondHalf = chartData.slice(Math.ceil(chartData.length / 2))
+    const firstHalf = transformedData.slice(0, Math.ceil(transformedData.length / 2))
+    const secondHalf = transformedData.slice(Math.ceil(transformedData.length / 2))
     
     const firstAvg = firstHalf.reduce((sum, item) => sum + item.uptime, 0) / firstHalf.length
     const secondAvg = secondHalf.reduce((sum, item) => sum + item.uptime, 0) / secondHalf.length
@@ -95,7 +106,7 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
     return 'text-destructive'
   }
 
-  if (chartData.length === 0) {
+  if (transformedData.length === 0 && !detailed) {
     return (
       <Card>
         <CardHeader>
@@ -106,10 +117,10 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
                 {title}
               </CardTitle>
               <CardDescription>
-                Uptime tracking and availability analysis
+                Uptime history and performance
               </CardDescription>
             </div>
-            <Select value={selectedTimeFrame} onValueChange={(value: TimeFrame) => setSelectedTimeFrame(value)}>
+            <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
@@ -148,9 +159,7 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
               {title}
             </CardTitle>
             <CardDescription>
-              Overall uptime: <span className={getUptimeColor(uptimePercentage)}>
-                {uptimePercentage.toFixed(2)}%
-              </span>
+              Overall uptime: {safeUptimePercentage.toFixed(2)}%
               {trend && (
                 <>
                   {trend.change === 0 ? (
@@ -173,7 +182,7 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
               )}
             </CardDescription>
           </div>
-          <Select value={selectedTimeFrame} onValueChange={(value: TimeFrame) => setSelectedTimeFrame(value)}>
+          <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
@@ -190,7 +199,7 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
       <CardContent>
         <ChartContainer config={chartConfig}>
           <AreaChart
-            data={chartData}
+            data={transformedData}
             margin={{
               left: 12,
               right: 12,
@@ -198,7 +207,7 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="hour"
+              dataKey="time"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
@@ -241,24 +250,24 @@ export default function UptimeChart({ data, title, uptimePercentage, detailed = 
           </AreaChart>
         </ChartContainer>
         
-        {detailed && chartData.length > 0 && (
+        {detailed && transformedData.length > 0 && (
           <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t">
             <div className="text-center">
               <div className="text-sm text-muted-foreground">Best Hour</div>
               <div className="text-lg font-semibold text-success">
-                {Math.max(...chartData.map(d => d.uptime)).toFixed(1)}%
+                {Math.max(...transformedData.map(d => d.uptime)).toFixed(1)}%
               </div>
             </div>
             <div className="text-center">
               <div className="text-sm text-muted-foreground">Average</div>
               <div className="text-lg font-semibold text-primary">
-                {uptimePercentage.toFixed(1)}%
+                {safeUptimePercentage.toFixed(1)}%
               </div>
             </div>
             <div className="text-center">
               <div className="text-sm text-muted-foreground">Worst Hour</div>
               <div className="text-lg font-semibold text-destructive">
-                {Math.min(...chartData.map(d => d.uptime)).toFixed(1)}%
+                {Math.min(...transformedData.map(d => d.uptime)).toFixed(1)}%
               </div>
             </div>
           </div>
