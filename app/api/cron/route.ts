@@ -2,6 +2,9 @@ import { createAdminClient } from '@/lib/supabase-admin'
 import { NextResponse } from 'next/server'
 import { Monitor, MonitorAlertRule, NotificationChannel, AlertLog } from '@/lib/supabase-types'
 import { sendAlert, AlertContext } from '@/lib/alert-service'
+import { MonitorSchedulerService } from '@/lib/sqs/scheduler-service'
+import { featureFlags } from '@/lib/sqs/config'
+import { SQSClient } from '@/lib/sqs/client' 
 
 export async function GET(request: Request) {
   // Verify this is a legitimate cron request from AWS Scheduler
@@ -10,7 +13,31 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  console.log('🔄 Legacy cron job triggered')
+
   try {
+    // Check if SQS processing is enabled
+    if (featureFlags.enableSQSProcessing) {
+      console.log('📨 SQS processing enabled - using scheduler service for monitor distribution')
+      
+      const sqsClient = new SQSClient()
+      await sqsClient.initialize()
+      // Use the scheduler service to handle SQS/cron split
+      const schedulerService = new MonitorSchedulerService(sqsClient)
+      const stats = await schedulerService.scheduleMonitorChecks()
+      
+      console.log('📊 Scheduler completed:', stats)
+      
+      return NextResponse.json({
+        mode: 'hybrid',
+        sqsProcessingEnabled: true,
+        sqsPercentage: featureFlags.sqsProcessingPercentage,
+        ...stats
+      })
+    }
+
+    console.log('⚙️ Legacy mode - processing all monitors directly via cron')
+
     // Create Supabase admin client to bypass RLS for cron jobs
     const supabase = createAdminClient()
 
@@ -28,10 +55,17 @@ export async function GET(request: Request) {
     }
 
     if (!monitors || monitors.length === 0) {
-      return NextResponse.json({ message: 'No monitors to check' })
+      return NextResponse.json({ 
+        mode: 'legacy',
+        message: 'No monitors to check',
+        processed: 0,
+        failed: 0,
+        total: 0,
+        timestamp: new Date().toISOString()
+      })
     }
 
-    console.log(`Processing ${monitors.length} monitors`)
+    console.log(`Processing ${monitors.length} monitors via legacy cron`)
 
     // Process each monitor
     const results = await Promise.allSettled(
@@ -41,9 +75,10 @@ export async function GET(request: Request) {
     const processed = results.filter(r => r.status === 'fulfilled').length
     const failed = results.filter(r => r.status === 'rejected').length
 
-    console.log(`Cron job completed: ${processed} processed, ${failed} failed`)
+    console.log(`Legacy cron job completed: ${processed} processed, ${failed} failed`)
 
     return NextResponse.json({ 
+      mode: 'legacy',
       processed, 
       failed, 
       total: monitors.length,

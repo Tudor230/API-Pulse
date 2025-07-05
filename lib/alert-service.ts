@@ -1,12 +1,28 @@
+// TODO: Deprecate this file.
+// It is not used in the production environment.
+// It is only used for testing and development.
+
 import { Resend } from 'resend'
 import { Twilio } from 'twilio'
 import { Monitor, NotificationChannel, AlertType } from './supabase-types'
 
-// Initialize services
-const resend = new Resend(process.env.RESEND_API_KEY)
-const twilio = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN 
-  ? new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-  : null
+// Initialize services lazily to avoid errors during testing
+let resend: Resend | null = null
+let twilio: Twilio | null = null
+
+function getResend(): Resend | null {
+  if (!resend && process.env.RESEND_API_KEY) {
+    resend = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resend
+}
+
+function getTwilio(): Twilio | null {
+  if (!twilio && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+    twilio = new Twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  }
+  return twilio
+}
 
 export interface AlertContext {
   monitor: Monitor
@@ -139,7 +155,8 @@ const getSMSMessage = (context: AlertContext): string => {
 
 // Send email alert
 export async function sendEmailAlert(context: AlertContext): Promise<AlertResult> {
-  if (!resend) {
+  const resendClient = getResend()
+  if (!resendClient) {
     return { success: false, error: 'Resend not configured' }
   }
   
@@ -153,7 +170,7 @@ export async function sendEmailAlert(context: AlertContext): Promise<AlertResult
   try {
     const { subject, html, text } = getEmailTemplate(context)
     
-    const result = await resend.emails.send({
+    const result = await resendClient.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'alerts@opreatudor.me',
       to: email,
       subject,
@@ -176,7 +193,8 @@ export async function sendEmailAlert(context: AlertContext): Promise<AlertResult
 
 // Send SMS alert
 export async function sendSMSAlert(context: AlertContext): Promise<AlertResult> {
-  if (!twilio) {
+  const twilioClient = getTwilio()
+  if (!twilioClient) {
     return { success: false, error: 'Twilio not configured' }
   }
   
@@ -190,7 +208,7 @@ export async function sendSMSAlert(context: AlertContext): Promise<AlertResult> 
   try {
     const message = getSMSMessage(context)
     
-    const result = await twilio.messages.create({
+    const result = await twilioClient.messages.create({
       body: message,
       to: phone,
       from: process.env.TWILIO_PHONE_NUMBER,
