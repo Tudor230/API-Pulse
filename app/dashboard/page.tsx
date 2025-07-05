@@ -45,7 +45,7 @@ export default async function DashboardPage() {
   const uptimePercentage = totalMonitors > 0 ? Math.round((upMonitors / totalMonitors) * 100) : 0
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 ">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

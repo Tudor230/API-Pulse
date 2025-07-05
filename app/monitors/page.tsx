@@ -42,7 +42,7 @@ export default async function MonitorsPage() {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <StaticBackground />
       <div className="relative z-10">
         <Header user={user} />

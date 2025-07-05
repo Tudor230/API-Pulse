@@ -9,7 +9,7 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <AnimatedBackground />
       <div className="relative z-10">
         <Header user={user} />
