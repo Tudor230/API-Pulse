@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:analyze": "cross-env ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
@@ -57,6 +58,7 @@
     "@types/react": "^19.1.7",
     "@types/react-dom": "^19.1.6",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
     "dotenv": "^17.0.1",
     "eslint": "^9.28.0",
     "eslint-config-next": "^15.3.3",
@@ -64,6 +66,7 @@
     "tailwindcss": "^4.1.8",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.20.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

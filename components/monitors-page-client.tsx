@@ -13,12 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Monitor } from '@/lib/supabase-types'
 import { createClient } from '@/lib/supabase-client'
-import { 
-  RefreshCw, 
-  ExternalLink, 
-  BarChart3, 
-  Search, 
-  Filter, 
+import {
+  ExternalLink,
+  BarChart3,
+  Search,
   Plus,
   Settings,
   Trash2,
@@ -29,10 +27,8 @@ import {
   Download,
   Upload,
   Tag,
-  FolderPlus,
   CheckSquare,
   Square,
-  MoreHorizontal,
   Clock,
   Globe,
   Shield,
@@ -111,7 +107,7 @@ function formatDate(dateString: string | null) {
 export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps) {
   const router = useRouter()
   const supabase = createClient()
-  
+
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [intervalFilter, setIntervalFilter] = useState<string>('all')
@@ -120,16 +116,16 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
   const [selectedMonitors, setSelectedMonitors] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState('manage')
   const [showBulkActions, setShowBulkActions] = useState(false)
-  
+
   // Modal states
   const [editModal, setEditModal] = useState<EditModalState>({ isOpen: false, monitor: null })
   const [intervalModal, setIntervalModal] = useState<IntervalModalState>({ isOpen: false, selectedMonitors: [] })
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({ isOpen: false, selectedMonitors: [], monitorNames: [] })
-  
+
   // Form states
   const [editForm, setEditForm] = useState({ name: '', url: '', interval_minutes: 5 })
   const [newInterval, setNewInterval] = useState(5)
-  
+
   // Loading states
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({})
   const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null)
@@ -138,7 +134,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
   const filteredMonitors = useMemo(() => {
     let filtered = monitors.filter(monitor => {
       const matchesSearch = monitor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          monitor.url.toLowerCase().includes(searchTerm.toLowerCase())
+        monitor.url.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesStatus = statusFilter === 'all' || monitor.status === statusFilter
       const matchesInterval = intervalFilter === 'all' || monitor.interval_minutes.toString() === intervalFilter
       return matchesSearch && matchesStatus && matchesInterval
@@ -215,7 +211,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
   const handleBulkEnable = async () => {
     const monitorIds = Array.from(selectedMonitors)
     setLoadingState('bulk-enable', true)
-    
+
     try {
       const { error } = await supabase
         .from('monitors')
@@ -238,7 +234,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
   const handleBulkDisable = async () => {
     const monitorIds = Array.from(selectedMonitors)
     setLoadingState('bulk-disable', true)
-    
+
     try {
       const { error } = await supabase
         .from('monitors')
@@ -267,7 +263,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
   const handleBulkChangeInterval = async () => {
     setLoadingState('bulk-interval', true)
-    
+
     try {
       const { error } = await supabase
         .from('monitors')
@@ -293,7 +289,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
     const names = monitors
       .filter(m => monitorIds.includes(m.id))
       .map(m => m.name)
-    
+
     setDeleteModal({
       isOpen: true,
       selectedMonitors: monitorIds,
@@ -303,7 +299,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
   const handleBulkDelete = async () => {
     setLoadingState('bulk-delete', true)
-    
+
     try {
       const { error } = await supabase
         .from('monitors')
@@ -336,9 +332,9 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
   const handleEditMonitor = async () => {
     if (!editModal.monitor) return
-    
+
     setLoadingState('edit', true)
-    
+
     try {
       const { error } = await supabase
         .from('monitors')
@@ -359,7 +355,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
   const handleCopyMonitor = async (monitor: Monitor) => {
     setLoadingState(`copy-${monitor.id}`, true)
-    
+
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
@@ -386,7 +382,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
   const handleDeleteSingleMonitor = async (monitor: Monitor) => {
     setLoadingState(`delete-${monitor.id}`, true)
-    
+
     try {
       const { error } = await supabase
         .from('monitors')
@@ -494,8 +490,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
               <AlertDescription className="flex items-center justify-between w-full">
                 <span>{selectedMonitors.size} monitor(s) selected</span>
                 <div className="flex items-center gap-2">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     onClick={handleBulkEnable}
                     disabled={isLoading['bulk-enable']}
@@ -503,8 +499,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     {isLoading['bulk-enable'] ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Play className="h-4 w-4 mr-1" />}
                     Enable
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     onClick={handleBulkDisable}
                     disabled={isLoading['bulk-disable']}
@@ -512,8 +508,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     {isLoading['bulk-disable'] ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Pause className="h-4 w-4 mr-1" />}
                     Disable
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="outline"
                     onClick={openIntervalModal}
                   >
@@ -524,8 +520,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     <Tag className="h-4 w-4 mr-1" />
                     Add Tags
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="destructive"
                     onClick={openDeleteModal}
                   >
@@ -556,7 +552,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     className="pl-10"
                   />
                 </div>
-                
+
                 <div className="flex gap-2">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-[130px]">
@@ -613,7 +609,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     {searchTerm || statusFilter !== 'all' || intervalFilter !== 'all' ? 'No monitors found' : 'No monitors configured'}
                   </h3>
                   <p className="text-muted-foreground mb-4">
-                    {searchTerm || statusFilter !== 'all' || intervalFilter !== 'all' 
+                    {searchTerm || statusFilter !== 'all' || intervalFilter !== 'all'
                       ? 'Try adjusting your search or filter criteria.'
                       : 'Create your first monitor to start tracking API performance.'
                     }
@@ -626,8 +622,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                       <TableRow>
                         <TableHead className="w-12">
                           <button onClick={handleSelectAll}>
-                            {selectedMonitors.size === filteredMonitors.length ? 
-                              <CheckSquare className="h-4 w-4" /> : 
+                            {selectedMonitors.size === filteredMonitors.length ?
+                              <CheckSquare className="h-4 w-4" /> :
                               <Square className="h-4 w-4" />
                             }
                           </button>
@@ -644,8 +640,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                         <TableRow key={monitor.id}>
                           <TableCell>
                             <button onClick={() => handleSelectMonitor(monitor.id)}>
-                              {selectedMonitors.has(monitor.id) ? 
-                                <CheckSquare className="h-4 w-4" /> : 
+                              {selectedMonitors.has(monitor.id) ?
+                                <CheckSquare className="h-4 w-4" /> :
                                 <Square className="h-4 w-4" />
                               }
                             </button>
@@ -654,9 +650,9 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                             <div>
                               <div className="font-medium flex items-center gap-2">
                                 {monitor.name}
-                                <a 
-                                  href={monitor.url} 
-                                  target="_blank" 
+                                <a
+                                  href={monitor.url}
+                                  target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-muted-foreground hover:text-primary"
                                 >
@@ -669,7 +665,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge 
+                            <Badge
                               variant={getStatusVariant(monitor.status)}
                               className={monitor.status === 'timeout' ? 'border-warning text-warning bg-warning/10' : ''}
                             >
@@ -698,23 +694,23 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                                   <BarChart3 className="h-4 w-4" />
                                 </Link>
                               </Button>
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => openEditModal(monitor)}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => handleCopyMonitor(monitor)}
                                 disabled={isLoading[`copy-${monitor.id}`]}
                               >
                                 {isLoading[`copy-${monitor.id}`] ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
                               </Button>
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteSingleMonitor(monitor)}
                                 disabled={isLoading[`delete-${monitor.id}`]}
