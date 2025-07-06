@@ -5,8 +5,9 @@ import { subscriptionService } from '@/lib/subscription-service'
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -17,7 +18,7 @@ export async function PATCH(
     try {
         const body = await request.json()
         const { url, name, interval_minutes, is_active } = body
-        const monitorId = params.id
+        const monitorId = resolvedParams.id
 
         // Validate required fields only if they are being updated
         if (url !== undefined && !url) {
@@ -94,15 +95,16 @@ export async function PATCH(
 
         return NextResponse.json({ monitor }, { status: 200 })
     } catch (error) {
-        logger.apiError('PATCH', `/api/monitors/${params.id}`, error, user?.id)
+        logger.apiError('PATCH', `/api/monitors/${resolvedParams.id}`, error, user?.id)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const resolvedParams = await params
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -111,7 +113,7 @@ export async function DELETE(
     }
 
     try {
-        const monitorId = params.id
+        const monitorId = resolvedParams.id
 
         // Verify monitor belongs to user
         const { data: existingMonitor, error: fetchError } = await supabase
@@ -145,7 +147,7 @@ export async function DELETE(
 
         return NextResponse.json({ success: true }, { status: 200 })
     } catch (error) {
-        logger.apiError('DELETE', `/api/monitors/${params.id}`, error, user?.id)
+        logger.apiError('DELETE', `/api/monitors/${resolvedParams.id}`, error, user?.id)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Crown, Monitor, Bell, Clock, BarChart3, ChevronDown, ChevronUp, Check, X } from 'lucide-react'
+import Link from 'next/link'
 
 export function SubscriptionStatus() {
   const [showDetails, setShowDetails] = useState(false)
@@ -60,8 +61,10 @@ export function SubscriptionStatus() {
         </div>
         <div className="flex items-center gap-2">
           {isFreePlan && (
-            <Button size="sm">
-              Upgrade to Pro
+            <Button size="sm" asChild>
+              <Link href="/pricing">
+                Upgrade to Pro
+              </Link>
             </Button>
           )}
           <Button
@@ -227,8 +230,10 @@ export function SubscriptionStatus() {
                     Unlock unlimited monitors, all intervals, and advanced notifications
                   </p>
                 </div>
-                <Button size="sm">
-                  Upgrade Now
+                <Button size="sm" asChild>
+                  <Link href="/pricing">
+                    Upgrade Now
+                  </Link>
                 </Button>
               </div>
             </div>

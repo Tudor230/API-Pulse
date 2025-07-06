@@ -28,20 +28,20 @@ export function Header({ user }: HeaderProps) {
             {user ? (
               // Authenticated navigation
               <>
-                <Link 
-                  href="/dashboard" 
+                <Link
+                  href="/dashboard"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Dashboard
                 </Link>
-                <Link 
-                  href="/monitors" 
+                <Link
+                  href="/monitors"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Monitors
                 </Link>
-                <Link 
-                  href="/alerts" 
+                <Link
+                  href="/alerts"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Alerts
@@ -50,20 +50,20 @@ export function Header({ user }: HeaderProps) {
             ) : (
               // Unauthenticated navigation
               <>
-                <Link 
-                  href="#features" 
+                <Link
+                  href="#features"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Features
                 </Link>
-                <Link 
-                  href="#pricing" 
+                <Link
+                  href="/pricing"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Pricing
                 </Link>
-                <Link 
-                  href="#docs" 
+                <Link
+                  href="#docs"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Docs

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Settings, Edit, Trash2, Save, X, AlertTriangle } from 'lucide-react'
+import Link from 'next/link'
 
 interface MonitorSettingsProps {
   monitor: Monitor
@@ -218,7 +219,7 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
               {isFreePlan && (
                 <p className="text-xs text-gray-500">
                   Free plan includes {allowedIntervals.length > 1 ? 'intervals' : 'interval'}: {allowedIntervals.join(', ')} minute{allowedIntervals.length > 1 ? 's' : ''}.
-                  <span className="text-blue-600"> Upgrade to Pro</span> for all intervals including 1, 5, 10, and 15 minutes.
+                  <Link href="/pricing" className="text-blue-600 hover:underline"> Upgrade to Pro</Link> for all intervals including 1, 5, 10, and 15 minutes.
                 </p>
               )}
             </div>
