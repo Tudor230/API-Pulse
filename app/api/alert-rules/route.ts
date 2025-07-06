@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
   const { data: alertRules, error } = await query
 
   if (error) {
-    console.error('Error fetching alert rules:', error)
+    logger.apiError('GET', '/api/alert-rules', error, user?.id)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -57,8 +58,8 @@ export async function POST(request: Request) {
 
     // Validate required fields
     if (!monitor_id || !notification_channel_id) {
-      return NextResponse.json({ 
-        error: 'Monitor ID and notification channel ID are required' 
+      return NextResponse.json({
+        error: 'Monitor ID and notification channel ID are required'
       }, { status: 400 })
     }
 
@@ -86,14 +87,14 @@ export async function POST(request: Request) {
 
     // Validate numeric constraints
     if (consecutive_failures_threshold < 1) {
-      return NextResponse.json({ 
-        error: 'Consecutive failures threshold must be at least 1' 
+      return NextResponse.json({
+        error: 'Consecutive failures threshold must be at least 1'
       }, { status: 400 })
     }
 
     if (cooldown_minutes < 0) {
-      return NextResponse.json({ 
-        error: 'Cooldown minutes cannot be negative' 
+      return NextResponse.json({
+        error: 'Cooldown minutes cannot be negative'
       }, { status: 400 })
     }
 
@@ -119,13 +120,13 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Error creating alert rule:', error)
+      logger.apiError('POST', '/api/alert-rules', error, user?.id)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ alertRule }, { status: 201 })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.apiError('POST', '/api/alert-rules', error, user?.id)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 

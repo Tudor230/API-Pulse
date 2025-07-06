@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
-import { validateChannelConfig } from '@/lib/alert-service'
+import { validateChannelConfig } from '@/lib/utils'
 import { AlertType } from '@/lib/supabase-types'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Error fetching notification channels:', error)
+    logger.apiError('GET', '/api/notification-channels', error, user?.id)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -49,9 +50,9 @@ export async function POST(request: Request) {
     // Validate channel configuration
     const validation = validateChannelConfig(type as AlertType, config)
     if (!validation.valid) {
-      return NextResponse.json({ 
-        error: 'Invalid configuration', 
-        details: validation.errors 
+      return NextResponse.json({
+        error: 'Invalid configuration',
+        details: validation.errors
       }, { status: 400 })
     }
 
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Error creating notification channel:', error)
+      logger.apiError('POST', '/api/notification-channels', error, user?.id)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 

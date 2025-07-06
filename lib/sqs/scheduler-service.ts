@@ -9,6 +9,7 @@ import {
   MESSAGE_TYPES,
   PRIORITY_LEVELS
 } from './types'
+import { logger } from '@/lib/logger'
 
 interface SchedulerStats {
   totalMonitors: number
@@ -33,7 +34,7 @@ export class MonitorSchedulerService {
    */
   async scheduleMonitorChecks(): Promise<SchedulerStats> {
     const startTime = Date.now()
-    console.log(`🕐 Starting SQS-only monitor scheduling...`)
+    logger.schedulerOperation('starting monitor scheduling')
 
     try {
       // Get monitors that are due for checking
@@ -50,13 +51,13 @@ export class MonitorSchedulerService {
         }
       }
 
-      console.log(`📨 Enqueueing all ${monitors.length} monitors to SQS`)
+      logger.schedulerOperation('enqueueing monitors', { length: monitors.length })
 
       // Enqueue ALL monitors to SQS - no cron fallback
       const sqsResult = await this.enqueueMonitorsToSQS(monitors)
 
       const duration = Date.now() - startTime
-      console.log(`✅ SQS scheduling completed in ${duration}ms: ${sqsResult.enqueued} enqueued, ${sqsResult.errors} errors`)
+      logger.schedulerOperation('scheduling completed', { duration, enqueued: sqsResult.enqueued, errors: sqsResult.errors })
 
       return {
         totalMonitors: monitors.length,
@@ -67,7 +68,7 @@ export class MonitorSchedulerService {
       }
 
     } catch (error) {
-      console.error('❌ Scheduler error:', error)
+      logger.error('Scheduler error', { component: 'Scheduler', error: (error instanceof Error ? error.message : String(error)) })
       throw error
     }
   }
@@ -85,7 +86,7 @@ export class MonitorSchedulerService {
       .limit(limit)
 
     if (error) {
-      console.error('Error fetching monitors:', error)
+      logger.error('Error fetching monitors', { component: 'Scheduler', error: (error instanceof Error ? error.message : String(error)) })
       throw new Error(`Database error: ${error.message}`)
     }
 
@@ -109,7 +110,7 @@ export class MonitorSchedulerService {
     const priorityGroups = this.groupMonitorsByPriority(monitors)
 
     for (const [priority, priorityMonitors] of Object.entries(priorityGroups)) {
-      console.log(`📋 Enqueueing ${priorityMonitors.length} ${priority} priority monitors`)
+      logger.schedulerOperation('enqueueing priority monitors', { priority, count: priorityMonitors.length })
 
       for (const monitor of priorityMonitors) {
         try {
@@ -128,7 +129,7 @@ export class MonitorSchedulerService {
           enqueued++
 
         } catch (error) {
-          console.error(`❌ Failed to enqueue monitor ${monitor.id}:`, error)
+          logger.error('Failed to enqueue monitor', { component: 'Scheduler', monitorId: monitor.id, error: (error instanceof Error ? error.message : String(error)) })
           errors++
         }
       }
@@ -242,7 +243,7 @@ export class MonitorSchedulerService {
       .eq('id', monitor.id)
 
     if (error) {
-      console.error(`Failed to update next_check_at for monitor ${monitor.id}:`, error)
+      logger.error('Failed to update next_check_at', { component: 'Scheduler', monitorId: monitor.id, error: (error instanceof Error ? error.message : String(error)) })
       // Don't throw - this is not critical for enqueueing
     }
   }

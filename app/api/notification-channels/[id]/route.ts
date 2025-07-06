@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -34,20 +35,20 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       .single()
 
     if (error) {
-      console.error('Error updating notification channel:', error)
+      logger.apiError('PATCH', '/api/notification-channels', error, user?.id)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ channel: updatedChannel })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.apiError('PATCH', '/api/notification-channels', error, user?.id)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -74,13 +75,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       .eq('id', id)
 
     if (error) {
-      console.error('Error deleting notification channel:', error)
+      logger.apiError('DELETE', '/api/notification-channels', error, user?.id)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Notification channel deleted successfully' })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.apiError('DELETE', '/api/notification-channels', error, user?.id)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 

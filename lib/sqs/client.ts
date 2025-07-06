@@ -19,6 +19,7 @@ import {
   QUEUE_NAMES
 } from './types'
 import { sqsConfig } from './config'
+import { logger } from '@/lib/logger'
 
 export class SQSClient implements QueueClient {
   private client: AWSSQSClient
@@ -41,7 +42,7 @@ export class SQSClient implements QueueClient {
       return
     }
 
-    console.log('🔌 Initializing SQS client...')
+    logger.info('Initializing SQS client...')
 
     try {
       // Load queue URLs from environment variables
@@ -51,10 +52,10 @@ export class SQSClient implements QueueClient {
       await this.verifyQueues()
 
       this.initialized = true
-      console.log('✅ SQS client initialized successfully')
+      logger.info('SQS client initialized successfully')
 
     } catch (error) {
-      console.error('❌ Failed to initialize SQS client:', error)
+      logger.sqsError('initialization', error)
       throw new Error(`SQS client initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -75,7 +76,7 @@ export class SQSClient implements QueueClient {
     }
 
     try {
-      console.log(`📤 Sending message to ${queueName}: ${message.messageId}`)
+      logger.sqsOperation('send message', queueName, message.messageId)
 
       const messageBody = JSON.stringify(message)
       const messageAttributes = this.formatMessageAttributes(attributes)
@@ -97,11 +98,11 @@ export class SQSClient implements QueueClient {
         throw new Error('No MessageId returned from SQS')
       }
 
-      console.log(`✅ Message sent successfully: ${result.MessageId}`)
+      logger.sqsOperation('message sent', queueName, result.MessageId)
       return result.MessageId
 
     } catch (error) {
-      console.error(`❌ Failed to send message to ${queueName}:`, error)
+      logger.sqsError('send message', error)
       throw new Error(`Send message failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -136,12 +137,12 @@ export class SQSClient implements QueueClient {
         return []
       }
 
-      console.log(`📥 Received ${result.Messages.length} messages from ${queueName}`)
+      logger.sqsOperation('received messages', queueName, `${result.Messages.length}`)
 
       return result.Messages.map(msg => this.parseMessage(msg)).filter(Boolean) as SQSMessage[]
 
     } catch (error) {
-      console.error(`❌ Failed to receive messages from ${queueName}:`, error)
+      logger.sqsError('receive messages', error)
       throw new Error(`Receive messages failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -164,10 +165,10 @@ export class SQSClient implements QueueClient {
       })
 
       await this.client.send(command)
-      console.log(`🗑️ Message deleted from ${queueName}`)
+      logger.sqsOperation('message deleted', queueName)
 
     } catch (error) {
-      console.error(`❌ Failed to delete message from ${queueName}:`, error)
+      logger.sqsError('delete message', error)
       throw new Error(`Delete message failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -195,10 +196,10 @@ export class SQSClient implements QueueClient {
       })
 
       await this.client.send(command)
-      console.log(`⏰ Message visibility changed for ${queueName}: ${visibilityTimeout}s`)
+      logger.sqsOperation('message visibility changed', queueName, `${visibilityTimeout}s`)
 
     } catch (error) {
-      console.error(`❌ Failed to change message visibility for ${queueName}:`, error)
+      logger.sqsError('change message visibility', error)
       throw new Error(`Change visibility failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -237,7 +238,7 @@ export class SQSClient implements QueueClient {
       }
 
     } catch (error) {
-      console.error(`❌ Failed to get queue attributes for ${queueName}:`, error)
+      logger.sqsError('get queue attributes', error)
       throw new Error(`Get queue attributes failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -261,7 +262,7 @@ export class SQSClient implements QueueClient {
     }
 
     try {
-      console.log(`📤 Sending batch of ${messages.length} messages to ${queueName}`)
+      logger.sqsOperation('sending batch of messages', queueName, `${messages.length}`)
 
       const entries = messages.map((msg, index) => ({
         Id: `msg-${index}`,
@@ -281,16 +282,16 @@ export class SQSClient implements QueueClient {
       const result = await this.client.send(command)
 
       if (result.Failed && result.Failed.length > 0) {
-        console.error(`❌ ${result.Failed.length} messages failed to send:`, result.Failed)
+        logger.sqsError('batch send partial failure', { failedCount: result.Failed.length, details: result.Failed }, queueName)
       }
 
       const messageIds = result.Successful?.map(s => s.MessageId).filter(Boolean) as string[] || []
-      console.log(`✅ Batch sent: ${messageIds.length} successful, ${result.Failed?.length || 0} failed`)
+      logger.sqsOperation('batch sent', queueName, `${messageIds.length} successful, ${result.Failed?.length || 0} failed`)
 
       return messageIds
 
     } catch (error) {
-      console.error(`❌ Failed to send message batch to ${queueName}:`, error)
+      logger.sqsError('send message batch', error, queueName)
       throw new Error(`Send batch failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -307,7 +308,7 @@ export class SQSClient implements QueueClient {
       try {
         health[queueName] = await this.getQueueAttributes(queueName)
       } catch (error) {
-        console.error(`❌ Failed to get health for ${queueName}:`, error)
+        logger.sqsError('health check', error, queueName)
         health[queueName] = {
           queueDepth: -1,
           messagesReceived: -1,
@@ -351,9 +352,9 @@ export class SQSClient implements QueueClient {
     for (const [queueName, queueUrl] of Object.entries(queueConfig)) {
       if (queueUrl) {
         this.queueUrls.set(queueName, queueUrl)
-        console.log(`📋 Loaded queue URL: ${queueName}`)
+        logger.debug('Queue URL loaded', { queueName })
       } else {
-        console.warn(`⚠️ Missing queue URL for: ${queueName}`)
+        logger.warn('Missing queue URL for', { queueName })
       }
     }
 
@@ -363,7 +364,7 @@ export class SQSClient implements QueueClient {
   }
 
   private async verifyQueues(): Promise<void> {
-    console.log('🔍 Verifying queue connectivity...')
+    logger.info('Verifying queue connectivity')
 
     // Simple verification - just check one queue to ensure we can connect
     const firstQueueName = Array.from(this.queueUrls.keys())[0]
@@ -384,10 +385,10 @@ export class SQSClient implements QueueClient {
       })
 
       await this.client.send(command)
-      console.log(`✅ Queue connectivity verified using: ${firstQueueName}`)
+      logger.info('Queue connectivity verified', { queueName: firstQueueName })
 
     } catch (error) {
-      console.error(`❌ Queue verification failed:`, error)
+      logger.sqsError('connectivity verification', error)
       throw new Error(`Queue connectivity check failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
@@ -424,7 +425,7 @@ export class SQSClient implements QueueClient {
   private parseMessage(msg: Message): SQSMessage | null {
     try {
       if (!msg.Body || !msg.ReceiptHandle) {
-        console.warn('⚠️ Invalid message format - missing body or receipt handle')
+        logger.warn('Invalid message format - missing body or receipt handle')
         return null
       }
 
@@ -435,7 +436,7 @@ export class SQSClient implements QueueClient {
 
       return parsed
     } catch (error) {
-      console.error('❌ Failed to parse message:', error)
+      logger.error('Failed to parse message', { error: (error instanceof Error ? error.message : String(error)) })
       return null
     }
   }
@@ -450,7 +451,7 @@ export class SQSClient implements QueueClient {
    * Cleanup and close connections
    */
   async destroy(): Promise<void> {
-    console.log('🛑 Destroying SQS client...')
+    logger.info('Destroying SQS client')
     this.initialized = false
     this.queueUrls.clear()
     // AWS SDK v3 clients don't need explicit cleanup

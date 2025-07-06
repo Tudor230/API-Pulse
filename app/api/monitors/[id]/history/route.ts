@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 export async function GET(
   request: Request,
@@ -7,7 +8,7 @@ export async function GET(
 ) {
   const resolvedParams = await params
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -28,13 +29,13 @@ export async function GET(
       .limit(parseInt(limit))
 
     if (error) {
-      console.error('Error fetching monitoring history:', error)
+      logger.apiError('GET', `/api/monitors/${resolvedParams.id}/history`, error, user?.id)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ history })
   } catch (error) {
-    console.error('API error:', error)
+    logger.apiError('GET', `/api/monitors/${resolvedParams.id}/history`, error, user?.id)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 

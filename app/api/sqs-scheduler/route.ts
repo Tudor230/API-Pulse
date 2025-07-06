@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import { MonitorSchedulerService, getSQSClient } from '@/lib/sqs'
+import { logger } from '@/lib/logger'
 
 export async function GET(request: Request) {
   // Verify this is a legitimate cron request
@@ -10,17 +11,17 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  console.log('🚀 SQS Scheduler endpoint triggered')
+  logger.info('SQS Scheduler endpoint triggered')
 
   try {
     // Get SQS client instance
     const sqsClient = await getSQSClient()
     const schedulerService = new MonitorSchedulerService(sqsClient)
-    
+
     // Execute the scheduling process
     const stats = await schedulerService.scheduleMonitorChecks()
-    
-    console.log('📊 Scheduler stats:', stats)
+
+    logger.info('Scheduler stats:', stats)
 
     return NextResponse.json({
       success: true,
@@ -29,9 +30,9 @@ export async function GET(request: Request) {
     })
 
   } catch (error) {
-    console.error('❌ SQS Scheduler error:', error)
-    
-    return NextResponse.json({ 
+    logger.apiError('GET', '/api/sqs-scheduler', error)
+
+    return NextResponse.json({
       error: 'Scheduler failed',
       details: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
@@ -44,13 +45,13 @@ export async function POST(request: Request) {
   try {
     const schedulerService = new MonitorSchedulerService()
     const health = await schedulerService.healthCheck()
-    
+
     return NextResponse.json({
       service: 'sqs-scheduler',
       ...health,
       timestamp: new Date().toISOString()
     })
-    
+
   } catch (error) {
     return NextResponse.json({
       service: 'sqs-scheduler',
