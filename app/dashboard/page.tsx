@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import AddMonitorForm from '@/components/add-monitor-form'
 import MonitorsList from '@/components/monitors-list'
 import ResponseTimeAnalytics from '@/components/response-time-analytics'
+import { SubscriptionStatus } from '@/components/subscription-status'
 import { Monitor } from '@/lib/supabase-types'
 import { Activity, AlertTriangle, CheckCircle, Clock, Timer, TrendingUp } from 'lucide-react'
 
@@ -55,6 +56,9 @@ export default async function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {/* Subscription Status */}
+      <SubscriptionStatus />
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">

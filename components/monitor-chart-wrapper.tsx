@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ResponseTimeTrend, UptimeStats, HourlyMonitorData } from '@/lib/supabase-types'
+import { useSubscription } from '@/lib/hooks/use-subscription'
 import ResponseTimeChart from "./response-time-chart";
 import UptimeChart from "./uptime-chart";
 import { Skeleton } from "./ui/skeleton";
@@ -18,7 +19,7 @@ interface MonitorChartWrapperProps {
     detailed?: boolean;
 }
 
-const timeFrameOptions = [
+const allTimeFrameOptions = [
     { value: '1h', label: 'Last Hour', hours: 1 },
     { value: '6h', label: 'Last 6 Hours', hours: 6 },
     { value: '24h', label: 'Last 24 Hours', hours: 24 },
@@ -33,9 +34,24 @@ export default function MonitorChartWrapper({
     chartType,
     detailed = false
 }: MonitorChartWrapperProps) {
+    const { getAllowedTimeframes, isFreePlan } = useSubscription()
     const [timeFrame, setTimeFrame] = useState('24h');
     const [data, setData] = useState(initialData);
     const [isLoading, setIsLoading] = useState(false);
+
+    const allowedTimeframes = getAllowedTimeframes()
+
+    // Filter timeframe options based on user's plan
+    const timeFrameOptions = allTimeFrameOptions.filter(option =>
+        allowedTimeframes.includes(option.value)
+    )
+
+    // Ensure the selected timeframe is allowed, fallback to first allowed option
+    useEffect(() => {
+        if (!allowedTimeframes.includes(timeFrame)) {
+            setTimeFrame(allowedTimeframes[0] || '1h')
+        }
+    }, [allowedTimeframes, timeFrame])
 
     const handleTimeFrameChange = useCallback(async (newTimeFrame: string) => {
         const selectedOption = timeFrameOptions.find(opt => opt.value === newTimeFrame);
@@ -52,6 +68,14 @@ export default function MonitorChartWrapper({
         try {
             const response = await fetch(`/api/monitors/${monitorId}/stats?hours=${selectedOption.hours}`);
             if (!response.ok) {
+                if (response.status === 403) {
+                    const errorData = await response.json();
+                    if (errorData.code === 'TIMEFRAME_NOT_ALLOWED') {
+                        console.error('Timeframe not allowed for current plan:', errorData.error);
+                        // Keep current data, don't throw error to prevent UI breaks
+                        return;
+                    }
+                }
                 throw new Error('Failed to fetch data');
             }
             const newData = await response.json();
@@ -66,10 +90,10 @@ export default function MonitorChartWrapper({
         } finally {
             setIsLoading(false);
         }
-    }, [monitorId, initialData]);
+    }, [monitorId, initialData, timeFrameOptions]);
 
     if (isLoading) {
-        return <Skeleton className="h-[450px] w-full" />;
+        return <Skeleton className="h-[420px] w-full" />;
     }
 
     if (chartType === 'response-time') {
@@ -82,6 +106,7 @@ export default function MonitorChartWrapper({
                 timeFrame={timeFrame}
                 onTimeFrameChangeAction={handleTimeFrameChange}
                 timeFrameOptions={timeFrameOptions}
+                isFreePlan={isFreePlan}
             />
         );
     }
@@ -96,6 +121,7 @@ export default function MonitorChartWrapper({
                 timeFrame={timeFrame}
                 onTimeFrameChangeAction={handleTimeFrameChange}
                 timeFrameOptions={timeFrameOptions}
+                isFreePlan={isFreePlan}
             />
         );
     }

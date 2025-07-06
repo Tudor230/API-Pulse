@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSubscription } from '@/lib/hooks/use-subscription'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,7 +13,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Monitor } from '@/lib/supabase-types'
-import { createClient } from '@/lib/supabase-client'
 import {
   ExternalLink,
   BarChart3,
@@ -106,7 +106,7 @@ function formatDate(dateString: string | null) {
 
 export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps) {
   const router = useRouter()
-  const supabase = createClient()
+  const { getAllowedIntervals, isFreePlan } = useSubscription()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -213,14 +213,30 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
     setLoadingState('bulk-enable', true)
 
     try {
-      const { error } = await supabase
-        .from('monitors')
-        .update({ is_active: true })
-        .in('id', monitorIds)
+      const results = await Promise.allSettled(
+        monitorIds.map(async id => {
+          const response = await fetch(`/api/monitors/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_active: true })
+          })
 
-      if (error) throw error
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to enable monitor')
+          }
 
-      showNotification('success', `Enabled ${monitorIds.length} monitor(s)`)
+          return response.json()
+        })
+      )
+
+      const failures = results.filter(result => result.status === 'rejected').length
+      if (failures > 0) {
+        showNotification('error', `Failed to enable ${failures} monitor(s)`)
+      } else {
+        showNotification('success', `Enabled ${monitorIds.length} monitor(s)`)
+      }
+
       setSelectedMonitors(new Set())
       setShowBulkActions(false)
       router.refresh()
@@ -236,14 +252,30 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
     setLoadingState('bulk-disable', true)
 
     try {
-      const { error } = await supabase
-        .from('monitors')
-        .update({ is_active: false })
-        .in('id', monitorIds)
+      const results = await Promise.allSettled(
+        monitorIds.map(async id => {
+          const response = await fetch(`/api/monitors/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_active: false })
+          })
 
-      if (error) throw error
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to disable monitor')
+          }
 
-      showNotification('success', `Disabled ${monitorIds.length} monitor(s)`)
+          return response.json()
+        })
+      )
+
+      const failures = results.filter(result => result.status === 'rejected').length
+      if (failures > 0) {
+        showNotification('error', `Failed to disable ${failures} monitor(s)`)
+      } else {
+        showNotification('success', `Disabled ${monitorIds.length} monitor(s)`)
+      }
+
       setSelectedMonitors(new Set())
       setShowBulkActions(false)
       router.refresh()
@@ -265,14 +297,37 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
     setLoadingState('bulk-interval', true)
 
     try {
-      const { error } = await supabase
-        .from('monitors')
-        .update({ interval_minutes: newInterval })
-        .in('id', intervalModal.selectedMonitors)
+      const results = await Promise.allSettled(
+        intervalModal.selectedMonitors.map(async id => {
+          const response = await fetch(`/api/monitors/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interval_minutes: newInterval })
+          })
 
-      if (error) throw error
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to update interval')
+          }
 
-      showNotification('success', `Updated interval for ${intervalModal.selectedMonitors.length} monitor(s)`)
+          return response.json()
+        })
+      )
+
+      const failures = results.filter(result => result.status === 'rejected')
+      const successes = results.filter(result => result.status === 'fulfilled')
+
+      if (failures.length > 0) {
+        const firstError = failures[0] as PromiseRejectedResult
+        if (firstError.reason?.message?.includes('not allowed') || firstError.reason?.message?.includes('INTERVAL_NOT_ALLOWED')) {
+          showNotification('error', `Interval ${formatInterval(newInterval)} not allowed for your plan. Upgrade to access shorter intervals.`)
+        } else {
+          showNotification('error', `Failed to update ${failures.length} monitor(s). ${firstError.reason?.message || ''}`)
+        }
+      } else {
+        showNotification('success', `Updated interval for ${successes.length} monitor(s)`)
+      }
+
       setIntervalModal({ isOpen: false, selectedMonitors: [] })
       setSelectedMonitors(new Set())
       setShowBulkActions(false)
@@ -301,14 +356,28 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
     setLoadingState('bulk-delete', true)
 
     try {
-      const { error } = await supabase
-        .from('monitors')
-        .delete()
-        .in('id', deleteModal.selectedMonitors)
+      const results = await Promise.allSettled(
+        deleteModal.selectedMonitors.map(async id => {
+          const response = await fetch(`/api/monitors/${id}`, {
+            method: 'DELETE'
+          })
 
-      if (error) throw error
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to delete monitor')
+          }
 
-      showNotification('success', `Deleted ${deleteModal.selectedMonitors.length} monitor(s)`)
+          return response.json()
+        })
+      )
+
+      const failures = results.filter(result => result.status === 'rejected').length
+      if (failures > 0) {
+        showNotification('error', `Failed to delete ${failures} monitor(s)`)
+      } else {
+        showNotification('success', `Deleted ${deleteModal.selectedMonitors.length} monitor(s)`)
+      }
+
       setDeleteModal({ isOpen: false, selectedMonitors: [], monitorNames: [] })
       setSelectedMonitors(new Set())
       setShowBulkActions(false)
@@ -336,18 +405,25 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
     setLoadingState('edit', true)
 
     try {
-      const { error } = await supabase
-        .from('monitors')
-        .update(editForm)
-        .eq('id', editModal.monitor.id)
+      const response = await fetch(`/api/monitors/${editModal.monitor.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        if (errorData.code === 'INTERVAL_NOT_ALLOWED') {
+          throw new Error(`Interval ${formatInterval(editForm.interval_minutes)} not allowed for your plan. Upgrade to access shorter intervals.`)
+        }
+        throw new Error(errorData.error || 'Failed to update monitor')
+      }
 
       showNotification('success', 'Monitor updated successfully')
       setEditModal({ isOpen: false, monitor: null })
       router.refresh()
     } catch (error) {
-      showNotification('error', 'Failed to update monitor')
+      showNotification('error', error instanceof Error ? error.message : 'Failed to update monitor')
     } finally {
       setLoadingState('edit', false)
     }
@@ -357,24 +433,25 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
     setLoadingState(`copy-${monitor.id}`, true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const { error } = await supabase
-        .from('monitors')
-        .insert({
+      const response = await fetch('/api/monitors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: `${monitor.name} (Copy)`,
           url: monitor.url,
-          interval_minutes: monitor.interval_minutes,
-          user_id: user.id
+          interval_minutes: monitor.interval_minutes
         })
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to copy monitor')
+      }
 
       showNotification('success', 'Monitor copied successfully')
       router.refresh()
     } catch (error) {
-      showNotification('error', 'Failed to copy monitor')
+      showNotification('error', error instanceof Error ? error.message : 'Failed to copy monitor')
     } finally {
       setLoadingState(`copy-${monitor.id}`, false)
     }
@@ -384,23 +461,26 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
     setLoadingState(`delete-${monitor.id}`, true)
 
     try {
-      const { error } = await supabase
-        .from('monitors')
-        .delete()
-        .eq('id', monitor.id)
+      const response = await fetch(`/api/monitors/${monitor.id}`, {
+        method: 'DELETE'
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete monitor')
+      }
 
       showNotification('success', 'Monitor deleted successfully')
       router.refresh()
     } catch (error) {
-      showNotification('error', 'Failed to delete monitor')
+      showNotification('error', error instanceof Error ? error.message : 'Failed to delete monitor')
     } finally {
       setLoadingState(`delete-${monitor.id}`, false)
     }
   }
 
   const uniqueIntervals = [...new Set(monitors.map(m => m.interval_minutes))].sort((a, b) => a - b)
+  const allowedIntervals = getAllowedIntervals()
 
   return (
     <div className="space-y-6">
@@ -485,7 +565,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
         <TabsContent value="manage" className="space-y-6">
           {/* Bulk Actions Bar */}
           {showBulkActions && (
-            <Alert>
+            <Alert className='flex items-center'>
               <CheckSquare className="h-4 w-4" />
               <AlertDescription className="flex items-center justify-between w-full">
                 <span>{selectedMonitors.size} monitor(s) selected</span>
@@ -857,13 +937,18 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 minute</SelectItem>
-                    <SelectItem value="5">5 minutes</SelectItem>
-                    <SelectItem value="10">10 minutes</SelectItem>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
+                    {allowedIntervals.map(interval => (
+                      <SelectItem key={interval} value={interval.toString()}>
+                        {formatInterval(interval)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                {isFreePlan && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Upgrade to access 1-minute intervals
+                  </p>
+                )}
               </div>
               <div className="flex gap-2 pt-4">
                 <Button
@@ -917,13 +1002,18 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 minute</SelectItem>
-                    <SelectItem value="5">5 minutes</SelectItem>
-                    <SelectItem value="10">10 minutes</SelectItem>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
+                    {allowedIntervals.map(interval => (
+                      <SelectItem key={interval} value={interval.toString()}>
+                        {formatInterval(interval)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                {isFreePlan && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Upgrade to access 1-minute intervals
+                  </p>
+                )}
               </div>
               <div className="flex gap-2 pt-4">
                 <Button

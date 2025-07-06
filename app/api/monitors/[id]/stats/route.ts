@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
 import { MonitoringHistory } from '@/lib/supabase-types'
 import { logger } from '@/lib/logger'
+import { subscriptionService } from '@/lib/subscription-service'
 
 type HistoryRecord = Pick<MonitoringHistory, 'checked_at' | 'status' | 'response_time'>
 
@@ -25,6 +26,24 @@ export async function GET(
 
   if (isNaN(hours) || hours <= 0 || hours > 720) {
     return NextResponse.json({ error: 'Invalid hours parameter' }, { status: 400 })
+  }
+
+  // Map hours to timeframe and check if user can access it
+  let timeframe = '24h'
+  if (hours === 1) timeframe = '1h'
+  else if (hours === 6) timeframe = '6h'
+  else if (hours === 24) timeframe = '24h'
+  else if (hours === 168) timeframe = '7d'
+  else if (hours === 720) timeframe = '30d'
+
+  const canAccessTimeframe = await subscriptionService.canAccessTimeframe(user.id, timeframe)
+  if (!canAccessTimeframe) {
+    const allowedTimeframes = await subscriptionService.getAllowedTimeframes(user.id)
+    return NextResponse.json({
+      error: `Timeframe ${timeframe} not allowed for your plan. Available timeframes: ${allowedTimeframes.join(', ')}.`,
+      code: 'TIMEFRAME_NOT_ALLOWED',
+      allowedTimeframes
+    }, { status: 403 })
   }
 
   const monitorId = resolvedParams.id

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Monitor } from '@/lib/supabase-types'
+import { useSubscription } from '@/lib/hooks/use-subscription'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,11 +17,14 @@ interface MonitorSettingsProps {
 }
 
 export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
+  const { getAllowedIntervals, isFreePlan } = useSubscription()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  
+
+  const allowedIntervals = getAllowedIntervals()
+
   // Form state
   const [formData, setFormData] = useState({
     name: monitor.name,
@@ -33,6 +37,14 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
     setIsLoading(true)
     setError(null)
     setSuccess(null)
+
+    // Validate interval is allowed for user's plan
+    const newInterval = parseInt(formData.interval_minutes)
+    if (!allowedIntervals.includes(newInterval)) {
+      setError(`The ${newInterval} minute interval is not available on your current plan. Please upgrade to Pro to access all intervals.`)
+      setIsLoading(false)
+      return
+    }
 
     try {
       const response = await fetch(`/api/monitors/${monitor.id}`, {
@@ -54,12 +66,12 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
 
       setSuccess('Monitor updated successfully!')
       setIsEditing(false)
-      
+
       // Refresh the page to show updated data
       setTimeout(() => {
         window.location.reload()
       }, 1500)
-      
+
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to update monitor')
     } finally {
@@ -86,7 +98,7 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
 
       // Redirect to dashboard after successful deletion
       window.location.href = '/dashboard'
-      
+
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to delete monitor')
     } finally {
@@ -106,14 +118,13 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
     setSuccess(null)
   }
 
-  const intervalOptions = [
-    { value: '1', label: 'Every minute' },
-    { value: '5', label: 'Every 5 minutes' },
-    { value: '10', label: 'Every 10 minutes' },
-    { value: '15', label: 'Every 15 minutes' },
-    { value: '30', label: 'Every 30 minutes' },
-    { value: '60', label: 'Every hour' }
-  ]
+  // Generate interval options based on user's plan
+  const intervalOptions = allowedIntervals.map(interval => ({
+    value: interval.toString(),
+    label: interval === 1 ? 'Every minute' :
+      interval < 60 ? `Every ${interval} minutes` :
+        `Every ${interval / 60} hour${interval / 60 > 1 ? 's' : ''}`
+  }))
 
   return (
     <Card>
@@ -204,6 +215,12 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {isFreePlan && (
+                <p className="text-xs text-gray-500">
+                  Free plan includes {allowedIntervals.length > 1 ? 'intervals' : 'interval'}: {allowedIntervals.join(', ')} minute{allowedIntervals.length > 1 ? 's' : ''}.
+                  <span className="text-blue-600"> Upgrade to Pro</span> for all intervals including 1, 5, 10, and 15 minutes.
+                </p>
+              )}
             </div>
 
             {/* Active Status */}
@@ -249,7 +266,7 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
                 <Label className="text-sm font-medium text-muted-foreground">Monitor Name</Label>
                 <div className="mt-1 text-sm font-medium">{monitor.name}</div>
               </div>
-              
+
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Status</Label>
                 <div className="mt-1 flex items-center gap-2">
@@ -267,8 +284,8 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
               <div>
                 <Label className="text-sm font-medium text-muted-foreground">Check Interval</Label>
                 <div className="mt-1 text-sm">
-                  {intervalOptions.find(opt => opt.value === monitor.interval_minutes.toString())?.label || 
-                   `Every ${monitor.interval_minutes} minutes`}
+                  {intervalOptions.find(opt => opt.value === monitor.interval_minutes.toString())?.label ||
+                    `Every ${monitor.interval_minutes} minutes`}
                 </div>
               </div>
 

@@ -22,6 +22,7 @@ interface ResponseTimeChartProps {
   timeFrame: string
   onTimeFrameChangeAction: (value: string) => void
   timeFrameOptions: TimeFrameOption[]
+  isFreePlan?: boolean
 }
 
 const chartConfig = {
@@ -38,7 +39,8 @@ export default function ResponseTimeChart({
   detailed = false,
   timeFrame,
   onTimeFrameChangeAction,
-  timeFrameOptions
+  timeFrameOptions,
+  isFreePlan = false
 }: ResponseTimeChartProps) {
   // Ensure avgResponseTime is never null
   const safeAvgResponseTime = avgResponseTime ?? 0
@@ -88,20 +90,20 @@ export default function ResponseTimeChart({
   // Calculate statistics
   const getStats = () => {
     if (chartData.length === 0) return null
-    
+
     const responseTimes = chartData.map(d => d.responseTime || 0)
     const min = Math.min(...responseTimes)
     const max = Math.max(...responseTimes)
-    
+
     // Calculate trend
     const firstHalf = chartData.slice(0, Math.ceil(chartData.length / 2))
     const secondHalf = chartData.slice(Math.ceil(chartData.length / 2))
-    
+
     const firstAvg = firstHalf.reduce((sum, item) => sum + (item.responseTime || 0), 0) / firstHalf.length
     const secondAvg = secondHalf.reduce((sum, item) => sum + (item.responseTime || 0), 0) / secondHalf.length
-    
+
     const trendChange = firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg) * 100 : 0
-    
+
     return {
       min,
       max,
@@ -126,18 +128,25 @@ export default function ResponseTimeChart({
                 Response time trends and performance analysis
               </CardDescription>
             </div>
-            <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {timeFrameOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col items-end gap-1">
+              <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeFrameOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {isFreePlan && (
+                <p className="text-xs text-muted-foreground">
+                  Upgrade for longer time ranges
+                </p>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -188,18 +197,25 @@ export default function ResponseTimeChart({
               )}
             </CardDescription>
           </div>
-          <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {timeFrameOptions.map(option => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col items-end gap-1">
+            <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {timeFrameOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isFreePlan && (
+              <p className="text-xs text-muted-foreground">
+                Upgrade for longer time ranges
+              </p>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -229,27 +245,27 @@ export default function ResponseTimeChart({
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}
             />
-            
+
             {/* Reference lines */}
-            <ReferenceLine 
-              y={safeAvgResponseTime} 
-              stroke="hsl(var(--muted-foreground))" 
+            <ReferenceLine
+              y={safeAvgResponseTime}
+              stroke="hsl(var(--muted-foreground))"
               strokeDasharray="3 3"
               strokeWidth={1}
             />
-            <ReferenceLine 
-              y={500} 
-              stroke="hsl(var(--success))" 
+            <ReferenceLine
+              y={500}
+              stroke="hsl(var(--success))"
               strokeDasharray="2 2"
               strokeOpacity={0.5}
             />
-            <ReferenceLine 
-              y={1000} 
-              stroke="hsl(var(--warning))" 
+            <ReferenceLine
+              y={1000}
+              stroke="hsl(var(--warning))"
               strokeDasharray="2 2"
               strokeOpacity={0.5}
             />
-            
+
             <Area
               dataKey="responseTime"
               type="natural"
@@ -260,7 +276,7 @@ export default function ResponseTimeChart({
             />
           </AreaChart>
         </ChartContainer>
-        
+
         {detailed && stats && (
           <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t">
             <div className="text-center">

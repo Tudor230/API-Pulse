@@ -126,6 +126,54 @@ export interface RecentAlert {
   created_at: string
 }
 
+// Subscription System Types
+export type SubscriptionPlan = 'free' | 'pro'
+export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete'
+
+export interface UserSubscription {
+  id: string
+  user_id: string
+  plan: SubscriptionPlan
+  status: SubscriptionStatus
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  stripe_price_id: string | null
+  current_period_start: string | null
+  current_period_end: string | null
+  trial_start: string | null
+  trial_end: string | null
+  canceled_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SubscriptionUsage {
+  id: string
+  user_id: string
+  subscription_id: string
+  monitor_count: number
+  notification_channels_count: number
+  api_calls_count: number
+  period_start: string
+  period_end: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PlanLimits {
+  id: string
+  plan: SubscriptionPlan
+  max_monitors: number
+  allowed_intervals: number[]
+  allowed_notification_types: AlertType[]
+  max_notification_channels: number
+  allowed_chart_timeframes: string[]
+  api_rate_limit: number
+  priority_support: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -154,6 +202,21 @@ export interface Database {
         Insert: Omit<AlertLog, 'id' | 'created_at'>
         Update: Partial<Omit<AlertLog, 'id' | 'created_at'>>
       }
+      user_subscriptions: {
+        Row: UserSubscription
+        Insert: Omit<UserSubscription, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<UserSubscription, 'id' | 'created_at' | 'updated_at'>>
+      }
+      subscription_usage: {
+        Row: SubscriptionUsage
+        Insert: Omit<SubscriptionUsage, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<SubscriptionUsage, 'id' | 'created_at' | 'updated_at'>>
+      }
+      plan_limits: {
+        Row: PlanLimits
+        Insert: Omit<PlanLimits, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<PlanLimits, 'id' | 'created_at' | 'updated_at'>>
+      }
     }
     Views: {
       monitor_statistics: {
@@ -180,6 +243,35 @@ export interface Database {
       should_send_alert: {
         Args: { p_monitor_id: string; p_notification_channel_id: string; p_cooldown_minutes: number }
         Returns: boolean
+      }
+      get_user_plan_limits: {
+        Args: { p_user_id: string }
+        Returns: PlanLimits[]
+      }
+      can_create_monitor: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
+      can_use_interval: {
+        Args: { p_user_id: string; p_interval_minutes: number }
+        Returns: boolean
+      }
+      can_create_notification_channel: {
+        Args: { p_user_id: string; p_type: AlertType }
+        Returns: boolean
+      }
+      can_access_timeframe: {
+        Args: { p_user_id: string; p_timeframe: string }
+        Returns: boolean
+      }
+      update_subscription_usage: {
+        Args: { 
+          p_user_id: string; 
+          p_monitor_count?: number; 
+          p_notification_channels_count?: number; 
+          p_api_calls_increment?: number 
+        }
+        Returns: void
       }
     }
   }

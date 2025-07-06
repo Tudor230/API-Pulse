@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { validateChannelConfig } from '@/lib/utils'
 import { AlertType } from '@/lib/supabase-types'
 import { logger } from '@/lib/logger'
+import { subscriptionService } from '@/lib/subscription-service'
 
 export async function GET(request: Request) {
   const supabase = await createClient()
@@ -56,6 +57,17 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
+    // Check subscription limits
+    const canCreateChannel = await subscriptionService.canCreateNotificationChannel(user.id, type as AlertType)
+    if (!canCreateChannel) {
+      const allowedTypes = await subscriptionService.getAllowedNotificationTypes(user.id)
+      return NextResponse.json({ 
+        error: `Cannot create ${type} notification channel. Your plan allows: ${allowedTypes.join(', ')}. Upgrade to Pro for unlimited channels and all notification types.`,
+        code: 'NOTIFICATION_CHANNEL_LIMIT_EXCEEDED',
+        allowedTypes
+      }, { status: 403 })
+    }
+
     // Create the notification channel
     const { data: channel, error } = await supabase
       .from('notification_channels')
@@ -105,6 +117,12 @@ export async function POST(request: Request) {
         console.log(`Created ${alertRules.length} alert rules for new channel`)
       }
     }
+
+    // Update subscription usage after successful channel creation
+    const currentChannelCount = await subscriptionService.getCurrentNotificationChannelsCount(user.id)
+    await subscriptionService.updateSubscriptionUsage(user.id, {
+      notificationChannelsCount: currentChannelCount
+    })
 
     // TODO: For email/SMS channels, send verification message
     // This would involve generating a verification token and sending it

@@ -22,6 +22,7 @@ interface UptimeChartProps {
   timeFrame: string
   onTimeFrameChangeAction: (value: string) => void
   timeFrameOptions: TimeFrameOption[]
+  isFreePlan?: boolean
 }
 
 const chartConfig = {
@@ -38,7 +39,8 @@ export default function UptimeChart({
   detailed = false,
   timeFrame,
   onTimeFrameChangeAction,
-  timeFrameOptions
+  timeFrameOptions,
+  isFreePlan = false
 }: UptimeChartProps) {
 
   const transformedData = (() => {
@@ -83,15 +85,15 @@ export default function UptimeChart({
   // Calculate trend
   const getTrend = () => {
     if (transformedData.length < 2) return null
-    
+
     const firstHalf = transformedData.slice(0, Math.ceil(transformedData.length / 2))
     const secondHalf = transformedData.slice(Math.ceil(transformedData.length / 2))
-    
+
     const firstAvg = firstHalf.reduce((sum, item) => sum + item.uptime, 0) / firstHalf.length
     const secondAvg = secondHalf.reduce((sum, item) => sum + item.uptime, 0) / secondHalf.length
-    
+
     const change = secondAvg - firstAvg
-    
+
     return {
       isImproving: change > 0,
       change: Math.abs(change)
@@ -120,18 +122,25 @@ export default function UptimeChart({
                 Uptime history and performance
               </CardDescription>
             </div>
-            <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {timeFrameOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col items-end gap-1">
+              <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeFrameOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {isFreePlan && (
+                <p className="text-xs text-muted-foreground">
+                  Upgrade for longer time ranges
+                </p>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -182,18 +191,25 @@ export default function UptimeChart({
               )}
             </CardDescription>
           </div>
-          <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {timeFrameOptions.map(option => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col items-end gap-1">
+            <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {timeFrameOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isFreePlan && (
+              <p className="text-xs text-muted-foreground">
+                Upgrade for longer time ranges
+              </p>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -224,21 +240,21 @@ export default function UptimeChart({
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}
             />
-            
+
             {/* Reference lines */}
-            <ReferenceLine 
-              y={99.9} 
-              stroke="hsl(var(--success))" 
+            <ReferenceLine
+              y={99.9}
+              stroke="hsl(var(--success))"
               strokeDasharray="3 3"
               strokeWidth={1}
             />
-            <ReferenceLine 
-              y={95} 
-              stroke="hsl(var(--warning))" 
+            <ReferenceLine
+              y={95}
+              stroke="hsl(var(--warning))"
               strokeDasharray="2 2"
               strokeOpacity={0.5}
             />
-            
+
             <Area
               dataKey="uptime"
               type="natural"
@@ -249,7 +265,7 @@ export default function UptimeChart({
             />
           </AreaChart>
         </ChartContainer>
-        
+
         {detailed && transformedData.length > 0 && (
           <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t">
             <div className="text-center">

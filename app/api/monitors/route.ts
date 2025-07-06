@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
+import { subscriptionService } from '@/lib/subscription-service'
 
 export async function GET() {
   const supabase = await createClient()
@@ -52,8 +53,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 })
     }
 
+    // Check subscription limits
+    const canCreateMonitor = await subscriptionService.canCreateMonitor(user.id)
+    if (!canCreateMonitor) {
+      return NextResponse.json({
+        error: 'Monitor limit reached. Upgrade to Pro plan for unlimited monitors.',
+        code: 'MONITOR_LIMIT_EXCEEDED'
+      }, { status: 403 })
+    }
+
+    // Check if user can use the specified interval
+    const intervalToUse = interval_minutes || 5
+    const canUseInterval = await subscriptionService.canUseInterval(user.id, intervalToUse)
+    if (!canUseInterval) {
+      const allowedIntervals = await subscriptionService.getAllowedIntervals(user.id)
+      return NextResponse.json({
+        error: `Interval ${intervalToUse} minutes not allowed. Available intervals: ${allowedIntervals.join(', ')} minutes.`,
+        code: 'INTERVAL_NOT_ALLOWED',
+        allowedIntervals
+      }, { status: 403 })
+    }
+
     // Calculate next check time
-    const nextCheckAt = new Date(Date.now() + ((interval_minutes || 5) * 60 * 1000))
+    const nextCheckAt = new Date(Date.now())
 
     const { data: monitor, error } = await supabase
       .from('monitors')
@@ -73,6 +95,12 @@ export async function POST(request: Request) {
       logger.apiError('POST', '/api/monitors', error, user?.id)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // Update subscription usage after successful monitor creation
+    const currentMonitorCount = await subscriptionService.getCurrentMonitorCount(user.id)
+    await subscriptionService.updateSubscriptionUsage(user.id, {
+      monitorCount: currentMonitorCount
+    })
 
     return NextResponse.json({ monitor }, { status: 201 })
   } catch (error) {
