@@ -1,0 +1,28 @@
+{
+  "name": "api-pulse-lambda-worker",
+  "version": "1.0.0",
+  "description": "AWS Lambda worker for API Pulse monitor checking and alerting",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "node-fetch": "^2.7.0",
+    "resend": "^3.2.0",
+    "twilio": "^4.23.0"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "monitoring",
+    "api",
+    "alerts",
+    "supabase"
+  ],
+  "author": "API-Pulse",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 

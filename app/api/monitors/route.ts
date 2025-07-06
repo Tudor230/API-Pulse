@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
+import { logger } from '@/lib/logger'
 
 export async function GET() {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -16,20 +17,20 @@ export async function GET() {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching monitors:', error)
+      logger.apiError('GET', '/api/monitors', error, user?.id)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ monitors: monitors || [] })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.apiError('GET', '/api/monitors', error, user?.id)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -69,13 +70,13 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
-      console.error('Error creating monitor:', error)
+      logger.apiError('POST', '/api/monitors', error, user?.id)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ monitor }, { status: 201 })
   } catch (error) {
-    console.error('Unexpected error:', error)
+    logger.apiError('POST', '/api/monitors', error, user?.id)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 

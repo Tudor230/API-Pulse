@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import { NextResponse } from 'next/server'
 import { MonitoringHistory } from '@/lib/supabase-types'
+import { logger } from '@/lib/logger'
 
 type HistoryRecord = Pick<MonitoringHistory, 'checked_at' | 'status' | 'response_time'>
 
@@ -37,15 +38,9 @@ export async function GET(
       .order('checked_at', { ascending: true })
 
     if (historyError) {
-      console.error('Error fetching monitoring history:', historyError)
+      logger.apiError('GET', `/api/monitors/${monitorId}/stats`, historyError, user?.id)
       return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 })
     }
-
-    // --- START DEBUG LOGGING ---
-    console.log(`[Stats API] Monitor ID: ${monitorId}`);
-    console.log(`[Stats API] Requested Hours: ${hours}`);
-    console.log(`[Stats API] Found ${history?.length || 0} history records.`);
-    // --- END DEBUG LOGGING ---
 
     // 1. Generate full uptime stats
     const uptimeStatsAccumulator = (history || []).reduce(
@@ -80,13 +75,13 @@ export async function GET(
       avg_response_time:
         uptimeStatsAccumulator.successful_checks > 0
           ? uptimeStatsAccumulator.total_response_time /
-            uptimeStatsAccumulator.successful_checks
+          uptimeStatsAccumulator.successful_checks
           : 0,
       uptime_percentage:
         uptimeStatsAccumulator.total_checks > 0
           ? (uptimeStatsAccumulator.successful_checks /
-              uptimeStatsAccumulator.total_checks) *
-            100
+            uptimeStatsAccumulator.total_checks) *
+          100
           : 0,
     }
 
@@ -141,7 +136,7 @@ export async function GET(
       period_hours: hours,
     })
   } catch (error) {
-    console.error(`API error for monitor ${resolvedParams.id}:`, error)
+    logger.apiError('GET', `/api/monitors/${resolvedParams.id}/stats`, error, user?.id)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 

@@ -1,0 +1,460 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "SQS Infrastructure for API-Pulse Monitoring System"
+
+Parameters:
+  Environment:
+    Type: String
+    Default: "development"
+    AllowedValues: ["development", "staging", "production"]
+    Description: "Deployment environment"
+
+  ProjectName:
+    Type: String
+    Default: "api-pulse"
+    Description: "Project name for resource naming"
+
+  KMSKeyId:
+    Type: String
+    Default: "alias/aws/sqs"
+    Description: "KMS Key ID for SQS encryption"
+
+  EnableEncryption:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: "Enable server-side encryption for SQS queues"
+
+Conditions:
+  IsProduction: !Equals [!Ref Environment, "production"]
+  EnableEncryption: !Equals [!Ref EnableEncryption, "true"]
+  UseEnvironmentPrefix: !Not [!Equals [!Ref Environment, "production"]]
+
+Resources:
+  # Dead Letter Queue (must be created first)
+  DeadLetterQueueStandard:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !If
+        - UseEnvironmentPrefix
+        - !Sub "${Environment}-${ProjectName}-dlq"
+        - !Sub "${ProjectName}-dlq"
+      MessageRetentionPeriod: 1209600
+      VisibilityTimeout: 300
+      KmsMasterKeyId: !If [EnableEncryption, !Ref KMSKeyId, !Ref "AWS::NoValue"]
+      KmsDataKeyReusePeriodSeconds:
+        !If [EnableEncryption, 300, !Ref "AWS::NoValue"]
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: QueueType
+          Value: "dead-letter-queue-standard"
+        - Key: ManagedBy
+          Value: "CloudFormation"
+
+  DeadLetterQueueFifo:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !If
+        - UseEnvironmentPrefix
+        - !Sub "${Environment}-${ProjectName}-dlq.fifo"
+        - !Sub "${ProjectName}-dlq.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: true
+      MessageRetentionPeriod: 1209600
+      VisibilityTimeout: 300
+      KmsMasterKeyId: !If [EnableEncryption, !Ref KMSKeyId, !Ref "AWS::NoValue"]
+      KmsDataKeyReusePeriodSeconds:
+        !If [EnableEncryption, 300, !Ref "AWS::NoValue"]
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: QueueType
+          Value: "dead-letter-queue-fifo"
+        - Key: ManagedBy
+          Value: "CloudFormation"
+
+  # Monitor Checks Queue (FIFO)
+  MonitorChecksQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !If
+        - UseEnvironmentPrefix
+        - !Sub "${Environment}-${ProjectName}-monitor-checks.fifo"
+        - !Sub "${ProjectName}-monitor-checks.fifo"
+      FifoQueue: true
+      ContentBasedDeduplication: true
+      DeduplicationScope: "messageGroup"
+      FifoThroughputLimit: "perMessageGroupId"
+      MessageRetentionPeriod: 1209600 # 14 days
+      VisibilityTimeout: 30
+      ReceiveMessageWaitTimeSeconds: 5 # Long polling
+      KmsMasterKeyId: !If [EnableEncryption, !Ref KMSKeyId, !Ref "AWS::NoValue"]
+      KmsDataKeyReusePeriodSeconds:
+        !If [EnableEncryption, 300, !Ref "AWS::NoValue"]
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueueFifo.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: QueueType
+          Value: "monitor-checks"
+        - Key: ManagedBy
+          Value: "CloudFormation"
+
+  # Priority Checks Queue (Standard)
+  PriorityChecksQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !If
+        - UseEnvironmentPrefix
+        - !Sub "${Environment}-${ProjectName}-priority-checks"
+        - !Sub "${ProjectName}-priority-checks"
+      MessageRetentionPeriod: 1209600 # 14 days
+      VisibilityTimeout: 20
+      ReceiveMessageWaitTimeSeconds: 2 # Faster polling for priority
+      KmsMasterKeyId: !If [EnableEncryption, !Ref KMSKeyId, !Ref "AWS::NoValue"]
+      KmsDataKeyReusePeriodSeconds:
+        !If [EnableEncryption, 300, !Ref "AWS::NoValue"]
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueueStandard.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: QueueType
+          Value: "priority-checks"
+        - Key: ManagedBy
+          Value: "CloudFormation"
+
+  # Alert Processing Queue (Standard)
+  AlertProcessingQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !If
+        - UseEnvironmentPrefix
+        - !Sub "${Environment}-${ProjectName}-alerts"
+        - !Sub "${ProjectName}-alerts"
+      MessageRetentionPeriod: 1209600 # 14 days
+      VisibilityTimeout: 60
+      ReceiveMessageWaitTimeSeconds: 2
+      KmsMasterKeyId: !If [EnableEncryption, !Ref KMSKeyId, !Ref "AWS::NoValue"]
+      KmsDataKeyReusePeriodSeconds:
+        !If [EnableEncryption, 300, !Ref "AWS::NoValue"]
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueueStandard.Arn
+        maxReceiveCount: 5 # More retries for alerts
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: QueueType
+          Value: "alert-processing"
+        - Key: ManagedBy
+          Value: "CloudFormation"
+
+  # Scheduler Queue (Standard)
+  SchedulerQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !If
+        - UseEnvironmentPrefix
+        - !Sub "${Environment}-${ProjectName}-scheduler"
+        - !Sub "${ProjectName}-scheduler"
+      MessageRetentionPeriod: 1209600 # 14 days
+      VisibilityTimeout: 120
+      ReceiveMessageWaitTimeSeconds: 10
+      KmsMasterKeyId: !If [EnableEncryption, !Ref KMSKeyId, !Ref "AWS::NoValue"]
+      KmsDataKeyReusePeriodSeconds:
+        !If [EnableEncryption, 300, !Ref "AWS::NoValue"]
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueueStandard.Arn
+        maxReceiveCount: 2
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: QueueType
+          Value: "scheduler"
+        - Key: ManagedBy
+          Value: "CloudFormation"
+
+  # IAM Role for API-Pulse Application
+  APIPulseServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !If
+        - UseEnvironmentPrefix
+        - !Sub "${Environment}-${ProjectName}-service-role"
+        - !Sub "${ProjectName}-service-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+                - ecs-tasks.amazonaws.com
+            Action: "sts:AssumeRole"
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "sts:AssumeRole"
+            Condition:
+              StringEquals:
+                "sts:ExternalId": !Sub "${ProjectName}-${Environment}"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: "CloudFormation"
+
+  # IAM Policy for SQS Operations
+  SQSOperationsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "${ProjectName}-sqs-operations-${Environment}"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "sqs:SendMessage"
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:GetQueueAttributes"
+              - "sqs:GetQueueUrl"
+            Resource:
+              - !GetAtt MonitorChecksQueue.Arn
+              - !GetAtt PriorityChecksQueue.Arn
+              - !GetAtt AlertProcessingQueue.Arn
+              - !GetAtt SchedulerQueue.Arn
+              - !GetAtt DeadLetterQueueStandard.Arn
+              - !GetAtt DeadLetterQueueFifo.Arn
+          - Effect: Allow
+            Action:
+              - "sqs:ListQueues"
+            Resource: "*"
+          - !If
+            - EnableEncryption
+            - Effect: Allow
+              Action:
+                - "kms:Decrypt"
+                - "kms:GenerateDataKey"
+              Resource: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/${KMSKeyId}"
+            - !Ref "AWS::NoValue"
+      Roles:
+        - !Ref APIPulseServiceRole
+
+  # CloudWatch Alarms for Queue Monitoring
+  MonitorChecksQueueDepthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${Environment}-monitor-checks-queue-depth"
+      AlarmDescription: "Monitor checks queue depth is too high"
+      MetricName: "ApproximateNumberOfVisibleMessages"
+      Namespace: "AWS/SQS"
+      Statistic: Average
+      Period: 300 # 5 minutes
+      EvaluationPeriods: 2
+      Threshold: 50
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt MonitorChecksQueue.QueueName
+      TreatMissingData: notBreaching
+
+  MonitorChecksQueueAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${Environment}-monitor-checks-message-age"
+      AlarmDescription: "Monitor checks messages are too old"
+      MetricName: "ApproximateAgeOfOldestMessage"
+      Namespace: "AWS/SQS"
+      Statistic: Average
+      Period: 300 # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 900 # 15 minutes
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt MonitorChecksQueue.QueueName
+      TreatMissingData: notBreaching
+
+  PriorityChecksQueueDepthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${Environment}-priority-checks-queue-depth"
+      AlarmDescription: "Priority checks queue depth is too high"
+      MetricName: "ApproximateNumberOfVisibleMessages"
+      Namespace: "AWS/SQS"
+      Statistic: Average
+      Period: 60 # 1 minute for priority queue
+      EvaluationPeriods: 2
+      Threshold: 20
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt PriorityChecksQueue.QueueName
+      TreatMissingData: notBreaching
+
+  AlertProcessingQueueDepthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${Environment}-alerts-queue-depth"
+      AlarmDescription: "Alert processing queue depth is too high"
+      MetricName: "ApproximateNumberOfVisibleMessages"
+      Namespace: "AWS/SQS"
+      Statistic: Average
+      Period: 300 # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 30
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt AlertProcessingQueue.QueueName
+      TreatMissingData: notBreaching
+
+  DeadLetterQueueDepthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${Environment}-dlq-messages"
+      AlarmDescription: "Dead letter queue has messages requiring attention"
+      MetricName: "ApproximateNumberOfVisibleMessages"
+      Namespace: "AWS/SQS"
+      Statistic: Average
+      Period: 300 # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt DeadLetterQueueStandard.QueueName
+      TreatMissingData: notBreaching
+
+  DeadLetterQueueFifoDepthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-${Environment}-dlq-fifo-messages"
+      AlarmDescription: "Dead letter queue FIFO has messages requiring attention"
+      MetricName: "ApproximateNumberOfVisibleMessages"
+      Namespace: "AWS/SQS"
+      Statistic: Average
+      Period: 300 # 5 minutes
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt DeadLetterQueueFifo.QueueName
+      TreatMissingData: notBreaching
+
+  # EventBridge Scheduler Role
+  SchedulerExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !If
+        - UseEnvironmentPrefix
+        - !Sub "${Environment}-${ProjectName}-scheduler-role"
+        - !Sub "${ProjectName}-scheduler-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "SchedulerInvokePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sqs:SendMessage"
+                Resource: !GetAtt SchedulerQueue.Arn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: ManagedBy
+          Value: "CloudFormation"
+
+Outputs:
+  DeadLetterQueueStandardUrl:
+    Description: "Standard Dead Letter Queue URL"
+    Value: !Ref DeadLetterQueueStandard
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-dlq-standard-url"
+
+  DeadLetterQueueFifoUrl:
+    Description: "FIFO Dead Letter Queue URL"
+    Value: !Ref DeadLetterQueueFifo
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-dlq-fifo-url"
+
+  MonitorChecksQueueUrl:
+    Description: "Monitor Checks Queue URL"
+    Value: !Ref MonitorChecksQueue
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-monitor-checks-url"
+
+  PriorityChecksQueueUrl:
+    Description: "Priority Checks Queue URL"
+    Value: !Ref PriorityChecksQueue
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-priority-checks-url"
+
+  AlertProcessingQueueUrl:
+    Description: "Alert Processing Queue URL"
+    Value: !Ref AlertProcessingQueue
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-alerts-url"
+
+  SchedulerQueueUrl:
+    Description: "Scheduler Queue URL"
+    Value: !Ref SchedulerQueue
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-scheduler-url"
+
+  ServiceRoleArn:
+    Description: "Service Role ARN for API-Pulse application"
+    Value: !GetAtt APIPulseServiceRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-service-role-arn"
+
+  SchedulerRoleArn:
+    Description: "Scheduler Role ARN for EventBridge"
+    Value: !GetAtt SchedulerExecutionRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-scheduler-role-arn"
+
+  QueueNames:
+    Description: "All queue names (JSON format)"
+    Value: !Sub |
+      {
+        "deadLetterQueueStandard": "${DeadLetterQueueStandard.QueueName}",
+        "deadLetterQueueFifo": "${DeadLetterQueueFifo.QueueName}",
+        "monitorChecks": "${MonitorChecksQueue.QueueName}",
+        "priorityChecks": "${PriorityChecksQueue.QueueName}",
+        "alertProcessing": "${AlertProcessingQueue.QueueName}",
+        "scheduler": "${SchedulerQueue.QueueName}"
+      }
+    Export:
+      Name: !Sub "${ProjectName}-${Environment}-queue-names"
