@@ -2,7 +2,7 @@
 
 export { SQSClient } from './client'
 export { MonitorSchedulerService } from './scheduler-service'
-export { SQSWorkerService } from './worker-service'
+// export { SQSWorkerService } from './worker-service'
 export * from './types'
 export * from './config'
 

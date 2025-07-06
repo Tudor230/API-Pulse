@@ -2,14 +2,13 @@
 
 import { createAdminClient } from '@/lib/supabase-admin'
 import { Monitor } from '@/lib/supabase-types'
-import { 
-  MonitorCheckMessage, 
+import {
+  MonitorCheckMessage,
   BulkScheduleMessage,
-  QUEUE_NAMES, 
+  QUEUE_NAMES,
   MESSAGE_TYPES,
-  PRIORITY_LEVELS 
+  PRIORITY_LEVELS
 } from './types'
-import { featureFlags } from './config'
 
 interface SchedulerStats {
   totalMonitors: number
@@ -22,7 +21,7 @@ interface SchedulerStats {
 export class MonitorSchedulerService {
   private supabase: any
   private queueClient: any // Will be injected
-  
+
   constructor(queueClient?: any) {
     this.supabase = createAdminClient()
     this.queueClient = queueClient
@@ -39,7 +38,7 @@ export class MonitorSchedulerService {
     try {
       // Get monitors that are due for checking
       const monitors = await this.getMonitorsDueForCheck()
-      
+
       if (!monitors || monitors.length === 0) {
         console.log('No monitors due for checking')
         return {
@@ -116,7 +115,7 @@ export class MonitorSchedulerService {
         try {
           const message = this.createMonitorCheckMessage(monitor, priority as keyof typeof PRIORITY_LEVELS)
           const queueName = this.selectQueueForPriority(priority as keyof typeof PRIORITY_LEVELS)
-          
+
           await this.queueClient.sendMessage(queueName, message, {
             Priority: priority,
             UserId: monitor.user_id,
@@ -125,9 +124,9 @@ export class MonitorSchedulerService {
 
           // Update next_check_at to prevent duplicate processing
           await this.updateMonitorNextCheck(monitor)
-          
+
           enqueued++
-          
+
         } catch (error) {
           console.error(`❌ Failed to enqueue monitor ${monitor.id}:`, error)
           errors++
@@ -201,7 +200,7 @@ export class MonitorSchedulerService {
       retryCount: 0,
       maxRetries: 3,
       correlationId: `schedule-${new Date().toISOString().slice(0, 10)}`,
-      
+
       payload: {
         monitorId: monitor.id,
         userId: monitor.user_id,
@@ -236,7 +235,7 @@ export class MonitorSchedulerService {
 
     const { error } = await this.supabase
       .from('monitors')
-      .update({ 
+      .update({
         next_check_at: nextCheckAt.toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -251,24 +250,24 @@ export class MonitorSchedulerService {
   /**
    * Create bulk schedule message for batch operations
    */
-  createBulkScheduleMessage(operation: 'schedule_checks' | 'reschedule_failed' | 'priority_check', filters: any = {}): BulkScheduleMessage {
-    return {
-      messageId: `bulk-${operation}-${Date.now()}`,
-      messageType: MESSAGE_TYPES.BULK_SCHEDULE,
-      version: '1.0',
-      timestamp: new Date().toISOString(),
-      source: 'scheduler-service',
-      retryCount: 0,
-      maxRetries: 2,
-      
-      payload: {
-        targetTime: new Date().toISOString(),
-        batchSize: 50,
-        filters,
-        operation
-      }
-    }
-  }
+  // createBulkScheduleMessage(operation: 'schedule_checks' | 'reschedule_failed' | 'priority_check', filters: any = {}): BulkScheduleMessage {
+  //   return {
+  //     messageId: `bulk-${operation}-${Date.now()}`,
+  //     messageType: MESSAGE_TYPES.BULK_SCHEDULE,
+  //     version: '1.0',
+  //     timestamp: new Date().toISOString(),
+  //     source: 'scheduler-service',
+  //     retryCount: 0,
+  //     maxRetries: 2,
+
+  //     payload: {
+  //       targetTime: new Date().toISOString(),
+  //       batchSize: 50,
+  //       filters,
+  //       operation
+  //     }
+  //   }
+  // }
 
   /**
    * Health check for scheduler service
