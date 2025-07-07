@@ -47,35 +47,128 @@ export default function UptimeChart({
     const sourceData = data || [];
     if (sourceData.length === 0) return [];
 
-    if (timeFrame === '7d' || timeFrame === '30d') {
-      const dailyData = sourceData.reduce((acc, item) => {
-        const day = new Date(item.hour_bucket).toISOString().split('T')[0];
-        if (!acc[day]) {
-          acc[day] = { successful_checks: 0, total_checks: 0 };
-        }
-        acc[day].successful_checks += (item.uptime_percentage / 100) * item.total_checks;
-        acc[day].total_checks += item.total_checks;
-        return acc;
-      }, {} as Record<string, { successful_checks: number; total_checks: number }>);
+    // Sort data chronologically
+    const sortedData = sourceData.sort((a, b) =>
+      new Date(a.hour_bucket).getTime() - new Date(b.hour_bucket).getTime()
+    );
 
-      return Object.entries(dailyData).map(([day, { successful_checks, total_checks }]) => {
-        const date = new Date(day);
+    // Aggregate data based on timeframe and data density
+    const aggregateData = (data: typeof sortedData, maxPoints: number) => {
+      if (data.length <= maxPoints) return data;
+
+      const bucketCount = maxPoints;
+      const itemsPerBucket = Math.ceil(data.length / bucketCount);
+      const buckets: typeof sortedData[] = [];
+
+      for (let i = 0; i < data.length; i += itemsPerBucket) {
+        buckets.push(data.slice(i, i + itemsPerBucket));
+      }
+
+      return buckets.map(bucket => {
+        const totalSuccessfulChecks = bucket.reduce((sum, item) =>
+          sum + (item.uptime_percentage / 100) * item.total_checks, 0);
+        const totalChecks = bucket.reduce((sum, item) => sum + item.total_checks, 0);
+        const avgUptime = totalChecks > 0 ? (totalSuccessfulChecks / totalChecks) * 100 : 0;
+
+        // Calculate average response time
+        const avgResponseTime = bucket.reduce((sum, item) => sum + item.avg_response_time, 0) / bucket.length;
+
+        // Use the middle timestamp of the bucket
+        const middleIndex = Math.floor(bucket.length / 2);
+        const representativeItem = bucket[middleIndex];
+
         return {
-          time: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          fullTime: date.toISOString(),
-          uptime: total_checks > 0 ? (successful_checks / total_checks) * 100 : 0,
-          checks: total_checks,
+          hour_bucket: representativeItem.hour_bucket,
+          uptime_percentage: avgUptime,
+          total_checks: totalChecks,
+          avg_response_time: avgResponseTime,
+          bucket_size: bucket.length
         };
       });
+    };
+
+    let aggregatedData: (typeof sortedData[0] & { bucket_size?: number })[];
+
+    // Determine optimal number of data points based on timeframe
+    if (timeFrame === '1h') {
+      aggregatedData = aggregateData(sortedData, 60); // ~1 point per minute
+    } else if (timeFrame === '6h') {
+      aggregatedData = aggregateData(sortedData, 72); // ~12 points per hour
+    } else if (timeFrame === '24h') {
+      aggregatedData = aggregateData(sortedData, 96); // ~4 points per hour
+    } else if (timeFrame === '7d') {
+      // Daily aggregation for 7 days
+      const dailyData = sortedData.reduce((acc, item) => {
+        const day = new Date(item.hour_bucket).toISOString().split('T')[0];
+        if (!acc[day]) {
+          acc[day] = [];
+        }
+        acc[day].push(item);
+        return acc;
+      }, {} as Record<string, typeof sortedData>);
+
+      aggregatedData = Object.entries(dailyData).map(([day, dayData]) => {
+        const totalSuccessfulChecks = dayData.reduce((sum, item) =>
+          sum + (item.uptime_percentage / 100) * item.total_checks, 0);
+        const totalChecks = dayData.reduce((sum, item) => sum + item.total_checks, 0);
+        const avgUptime = totalChecks > 0 ? (totalSuccessfulChecks / totalChecks) * 100 : 0;
+        const avgResponseTime = dayData.reduce((sum, item) => sum + item.avg_response_time, 0) / dayData.length;
+
+        return {
+          hour_bucket: day + 'T12:00:00Z', // Use noon as representative time
+          uptime_percentage: avgUptime,
+          total_checks: totalChecks,
+          avg_response_time: avgResponseTime,
+          bucket_size: dayData.length
+        };
+      });
+    } else if (timeFrame === '30d') {
+      // Daily aggregation for 30 days
+      const dailyData = sortedData.reduce((acc, item) => {
+        const day = new Date(item.hour_bucket).toISOString().split('T')[0];
+        if (!acc[day]) {
+          acc[day] = [];
+        }
+        acc[day].push(item);
+        return acc;
+      }, {} as Record<string, typeof sortedData>);
+
+      aggregatedData = Object.entries(dailyData).map(([day, dayData]) => {
+        const totalSuccessfulChecks = dayData.reduce((sum, item) =>
+          sum + (item.uptime_percentage / 100) * item.total_checks, 0);
+        const totalChecks = dayData.reduce((sum, item) => sum + item.total_checks, 0);
+        const avgUptime = totalChecks > 0 ? (totalSuccessfulChecks / totalChecks) * 100 : 0;
+        const avgResponseTime = dayData.reduce((sum, item) => sum + item.avg_response_time, 0) / dayData.length;
+
+        return {
+          hour_bucket: day + 'T12:00:00Z',
+          uptime_percentage: avgUptime,
+          total_checks: totalChecks,
+          avg_response_time: avgResponseTime,
+          bucket_size: dayData.length
+        };
+      });
+    } else {
+      aggregatedData = aggregateData(sortedData, 100); // Default max points
     }
 
-    return sourceData.map(item => {
+    // Transform aggregated data for chart display
+    return aggregatedData.map(item => {
       const date = new Date(item.hour_bucket);
+      let timeFormat: string;
+
+      if (timeFrame === '7d' || timeFrame === '30d') {
+        timeFormat = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      } else {
+        timeFormat = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false });
+      }
+
       return {
-        time: date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false }),
+        time: timeFormat,
         fullTime: date.toLocaleString(),
         uptime: item.uptime_percentage,
         checks: item.total_checks,
+        bucketSize: item.bucket_size || 1,
       };
     });
   })().sort((a, b) => new Date(a.fullTime).getTime() - new Date(b.fullTime).getTime());
@@ -228,6 +321,7 @@ export default function UptimeChart({
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => value}
+              interval={transformedData.length > 50 ? Math.floor(transformedData.length / 8) : 0}
             />
             <YAxis
               tickLine={false}
@@ -238,7 +332,45 @@ export default function UptimeChart({
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
+              content={({ active, payload, label }) => {
+                if (!active || !payload || !payload.length) return null;
+
+                const data = payload[0].payload;
+                const bucketSize = data.bucketSize || 1;
+
+                return (
+                  <div className="rounded-lg border bg-background p-3 shadow-md">
+                    <div className="grid gap-2">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{label}</span>
+                        <span className="text-xs text-muted-foreground">{data.fullTime}</span>
+                      </div>
+                      <div className="grid gap-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm">Uptime:</span>
+                          <span className="font-mono text-sm font-medium">
+                            {data.uptime.toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm">Total Checks:</span>
+                          <span className="font-mono text-sm font-medium">
+                            {data.checks}
+                          </span>
+                        </div>
+                        {bucketSize > 1 && (
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm text-muted-foreground">Time Buckets:</span>
+                            <span className="text-sm text-muted-foreground">
+                              {bucketSize} periods
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }}
             />
 
             {/* Reference lines */}
@@ -257,11 +389,22 @@ export default function UptimeChart({
 
             <Area
               dataKey="uptime"
-              type="natural"
+              type="monotone"
               fill="var(--primary)"
-              fillOpacity={0.4}
+              fillOpacity={0.3}
               stroke="var(--primary)"
               strokeWidth={2}
+              dot={{
+                fill: "var(--primary)",
+                strokeWidth: 0,
+                r: transformedData.length > 50 ? 0 : 2,
+              }}
+              activeDot={{
+                r: 4,
+                fill: "var(--primary)",
+                strokeWidth: 2,
+                stroke: "var(--background)",
+              }}
             />
           </AreaChart>
         </ChartContainer>

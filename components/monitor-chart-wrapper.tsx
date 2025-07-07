@@ -36,27 +36,12 @@ export default function MonitorChartWrapper({
 }: MonitorChartWrapperProps) {
     const { getAllowedTimeframes, isFreePlan, loading } = useSubscription()
     const allowedTimeframes = getAllowedTimeframes()
-    console.log('Allowed timeframes:', allowedTimeframes);
-    
-    // Calculate initial timeframe based on user's plan
-    const getInitialTimeframe = () => {
-        // If subscription is still loading, default to 24h (will be corrected when loaded)
-        if (loading) {
-            return '24h';
-        }
-        
-        if (allowedTimeframes.includes('24h')) {
-            return '24h'; // Pro users get 24h
-        }
-        return allowedTimeframes[allowedTimeframes.length - 1] || '6h'; // Free users get last allowed timeframe
-    }
 
-    const [timeFrame, setTimeFrame] = useState(getInitialTimeframe);
+    const [timeFrame, setTimeFrame] = useState('24h'); // Start with 24h, will be corrected
     const [data, setData] = useState(initialData);
     const [isLoading, setIsLoading] = useState(false);
     const [hasInitialized, setHasInitialized] = useState(false);
-    console.log('Initial timeframe:', timeFrame);
-    
+
     // Filter timeframe options based on user's plan
     const timeFrameOptions = allTimeFrameOptions.filter(option =>
         allowedTimeframes.includes(option.value)
@@ -101,34 +86,23 @@ export default function MonitorChartWrapper({
         }
     }, [monitorId, initialData, timeFrameOptions]);
 
-    // Handle subscription loading completion and correct timeframe if needed
+    // Handle subscription loading completion and set correct initial timeframe
     useEffect(() => {
-        if (!loading && allowedTimeframes.length > 0) {
-            const correctTimeframe = allowedTimeframes.includes('24h') ? '24h' : (allowedTimeframes[allowedTimeframes.length - 1] || '6h');
-            
-            // If the current timeframe is different from what it should be, update it
-            if (timeFrame !== correctTimeframe) {
-                setTimeFrame(correctTimeframe);
-                
-                // If switching away from 24h, fetch appropriate data
-                if (correctTimeframe !== '24h') {
-                    handleTimeFrameChange(correctTimeframe);
-                }
-            }
-        }
-    }, [loading, allowedTimeframes, timeFrame, handleTimeFrameChange]);
-
-    // Initialize data for the correct timeframe (only run once on mount)
-    useEffect(() => {
-        if (!hasInitialized && !loading && allowedTimeframes.length > 0) {
+        if (!loading && allowedTimeframes.length > 0 && !hasInitialized) {
             setHasInitialized(true);
 
-            // If user can't access 24h data and we're not showing 24h, fetch correct data
-            if (!allowedTimeframes.includes('24h') && timeFrame !== '24h') {
-                handleTimeFrameChange(timeFrame);
+            const correctTimeframe = allowedTimeframes.includes('24h') ? '24h' : (allowedTimeframes[allowedTimeframes.length - 1] || '6h');
+
+            setTimeFrame(correctTimeframe);
+
+            // If user can't access 24h data, fetch correct data
+            if (correctTimeframe !== '24h') {
+                handleTimeFrameChange(correctTimeframe);
             }
         }
-    }, [allowedTimeframes, timeFrame, hasInitialized, loading, handleTimeFrameChange]);
+    }, [loading, allowedTimeframes, hasInitialized, handleTimeFrameChange]);
+
+    // Remove the old initialization useEffect since it's now handled above
 
     if (isLoading) {
         return <Skeleton className="h-[420px] w-full" />;

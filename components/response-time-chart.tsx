@@ -50,42 +50,137 @@ export default function ResponseTimeChart({
     const sourceData = (data || []).filter(item => item.response_time !== null);
     if (sourceData.length === 0) return [];
 
-    if (timeFrame === '7d' || timeFrame === '30d') {
-      const dailyData = sourceData.reduce((acc, item) => {
-        const day = new Date(item.checked_at).toISOString().split('T')[0];
-        if (!acc[day]) {
-          acc[day] = { total: 0, count: 0 };
-        }
-        acc[day].total += item.response_time!;
-        acc[day].count++;
-        return acc;
-      }, {} as Record<string, { total: number; count: number }>);
+    // Sort data chronologically first
+    const sortedData = sourceData.sort((a, b) =>
+      new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime()
+    );
 
-      return Object.entries(dailyData).map(([day, { total, count }]) => {
-        const date = new Date(day);
+    // Aggregate data based on timeframe and data density
+    const aggregateData = (data: typeof sortedData, bucketSize: number) => {
+      if (data.length <= bucketSize) return data;
+
+      const buckets: typeof sortedData[] = [];
+      const bucketCount = Math.ceil(data.length / bucketSize);
+      const itemsPerBucket = Math.ceil(data.length / bucketCount);
+
+      for (let i = 0; i < data.length; i += itemsPerBucket) {
+        buckets.push(data.slice(i, i + itemsPerBucket));
+      }
+
+      return buckets.map(bucket => {
+        const responseTimes = bucket.map(item => item.response_time!);
+        const avgResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length;
+        const maxResponseTime = Math.max(...responseTimes);
+        const hasFailures = bucket.some(item => item.status !== 'up');
+
+        // Use the middle timestamp of the bucket for better representation
+        const middleIndex = Math.floor(bucket.length / 2);
+        const representativeItem = bucket[middleIndex];
+
         return {
-          time: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          fullTime: date.toISOString(),
-          responseTime: total / count,
-          status: 'up', // Status is aggregated, so we simplify
+          ...representativeItem,
+          response_time: avgResponseTime,
+          max_response_time: maxResponseTime,
+          status: hasFailures ? 'down' : 'up',
+          bucket_size: bucket.length
         };
       });
+    };
+
+    // Determine optimal number of data points based on timeframe
+    let maxDataPoints: number;
+    let aggregatedData: typeof sortedData;
+
+    if (timeFrame === '1h') {
+      maxDataPoints = 60; // Show every minute or aggregate to ~60 points
+      aggregatedData = aggregateData(sortedData, 1); // Minimal aggregation for 1h
+    } else if (timeFrame === '6h') {
+      maxDataPoints = 72; // ~6 points per hour
+      aggregatedData = aggregateData(sortedData, Math.max(1, Math.floor(sortedData.length / maxDataPoints)));
+    } else if (timeFrame === '24h') {
+      maxDataPoints = 96; // ~4 points per hour
+      aggregatedData = aggregateData(sortedData, Math.max(1, Math.floor(sortedData.length / maxDataPoints)));
+    } else if (timeFrame === '7d') {
+      // Daily aggregation for 7 days
+      const dailyData = sortedData.reduce((acc, item) => {
+        const day = new Date(item.checked_at).toISOString().split('T')[0];
+        if (!acc[day]) {
+          acc[day] = [];
+        }
+        acc[day].push(item);
+        return acc;
+      }, {} as Record<string, typeof sortedData>);
+
+      aggregatedData = Object.entries(dailyData).map(([day, dayData]) => {
+        const responseTimes = dayData.map(item => item.response_time!);
+        const avgResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length;
+        const maxResponseTime = Math.max(...responseTimes);
+        const hasFailures = dayData.some(item => item.status !== 'up');
+
+        return {
+          checked_at: day + 'T12:00:00Z', // Use noon as representative time
+          response_time: avgResponseTime,
+          max_response_time: maxResponseTime,
+          status: hasFailures ? 'down' : 'up',
+          bucket_size: dayData.length
+        };
+      });
+    } else if (timeFrame === '30d') {
+      // Daily aggregation for 30 days
+      const dailyData = sortedData.reduce((acc, item) => {
+        const day = new Date(item.checked_at).toISOString().split('T')[0];
+        if (!acc[day]) {
+          acc[day] = [];
+        }
+        acc[day].push(item);
+        return acc;
+      }, {} as Record<string, typeof sortedData>);
+
+      aggregatedData = Object.entries(dailyData).map(([day, dayData]) => {
+        const responseTimes = dayData.map(item => item.response_time!);
+        const avgResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length;
+        const maxResponseTime = Math.max(...responseTimes);
+        const hasFailures = dayData.some(item => item.status !== 'up');
+
+        return {
+          checked_at: day + 'T12:00:00Z',
+          response_time: avgResponseTime,
+          max_response_time: maxResponseTime,
+          status: hasFailures ? 'down' : 'up',
+          bucket_size: dayData.length
+        };
+      });
+    } else {
+      // Default aggregation
+      maxDataPoints = 100;
+      aggregatedData = aggregateData(sortedData, Math.max(1, Math.floor(sortedData.length / maxDataPoints)));
     }
 
-    return sourceData.map(item => {
+    // Transform aggregated data for chart display
+    return aggregatedData.map(item => {
       const date = new Date(item.checked_at);
-      return {
-        time: date.toLocaleTimeString('en-US', {
+      let timeFormat: string;
+
+      if (timeFrame === '7d' || timeFrame === '30d') {
+        timeFormat = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      } else {
+        timeFormat = date.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
-        }),
+        });
+      }
+
+      return {
+        time: timeFormat,
         fullTime: date.toLocaleString(),
         responseTime: item.response_time,
+        maxResponseTime: (item as any).max_response_time || item.response_time,
         status: item.status,
+        bucketSize: (item as any).bucket_size || 1,
       };
     });
-  })().sort((a, b) => new Date(a.fullTime).getTime() - new Date(b.fullTime).getTime());
+  })();
 
   // Calculate statistics
   const getStats = () => {
@@ -234,6 +329,7 @@ export default function ResponseTimeChart({
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => value}
+              interval={chartData.length > 50 ? Math.floor(chartData.length / 8) : 0}
             />
             <YAxis
               tickLine={false}
@@ -243,7 +339,55 @@ export default function ResponseTimeChart({
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
+              content={({ active, payload, label }) => {
+                if (!active || !payload || !payload.length) return null;
+
+                const data = payload[0].payload;
+                const bucketSize = data.bucketSize || 1;
+                const maxResponseTime = data.maxResponseTime;
+
+                return (
+                  <div className="rounded-lg border bg-background p-3 shadow-md">
+                    <div className="grid gap-2">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{label}</span>
+                        <span className="text-xs text-muted-foreground">{data.fullTime}</span>
+                      </div>
+                      <div className="grid gap-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm">Avg Response Time:</span>
+                          <span className="font-mono text-sm font-medium">
+                            {Math.round(data.responseTime)}ms
+                          </span>
+                        </div>
+                        {bucketSize > 1 && maxResponseTime && (
+                          <>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm">Max Response Time:</span>
+                              <span className="font-mono text-sm font-medium">
+                                {Math.round(maxResponseTime)}ms
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm text-muted-foreground">Data Points:</span>
+                              <span className="text-sm text-muted-foreground">
+                                {bucketSize} checks
+                              </span>
+                            </div>
+                          </>
+                        )}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm">Status:</span>
+                          <span className={`text-sm font-medium ${data.status === 'up' ? 'text-green-600' : 'text-red-600'
+                            }`}>
+                            {data.status === 'up' ? 'Up' : 'Down'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }}
             />
 
             {/* Reference lines */}
@@ -268,11 +412,22 @@ export default function ResponseTimeChart({
 
             <Area
               dataKey="responseTime"
-              type="natural"
+              type="monotone"
               fill="var(--primary)"
-              fillOpacity={0.4}
+              fillOpacity={0.3}
               stroke="var(--primary)"
               strokeWidth={2}
+              dot={{
+                fill: "var(--primary)",
+                strokeWidth: 0,
+                r: chartData.length > 50 ? 0 : 2,
+              }}
+              activeDot={{
+                r: 4,
+                fill: "var(--primary)",
+                strokeWidth: 2,
+                stroke: "var(--background)",
+              }}
             />
           </AreaChart>
         </ChartContainer>
