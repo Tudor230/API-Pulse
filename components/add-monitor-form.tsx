@@ -140,7 +140,7 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
             </Alert>
           )}
 
-          <Button type="submit" className="w-full mt-3" disabled={isLoading}>
+          <Button type="submit" className="w-full mt-[11px]" disabled={isLoading}>
             {isLoading ? 'Creating...' : 'Add Monitor'}
           </Button>
         </form>
