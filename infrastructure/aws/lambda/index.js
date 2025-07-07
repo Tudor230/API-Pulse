@@ -2,28 +2,80 @@
 // This replaces the Node.js cron job with a scalable, fault-tolerant solution
 
 const { createClient } = require("@supabase/supabase-js");
+const { SSMClient, GetParametersCommand } = require("@aws-sdk/client-ssm");
 const fetch = require("node-fetch");
 
-// Initialize Supabase client lazily to handle missing env vars during testing
+// Cache for parameters and clients
+let parametersCache = null;
 let supabase = null;
 
-function getSupabaseClient() {
-  if (!supabase) {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+/**
+ * Get parameters from Parameter Store with caching
+ */
+async function getParameters() {
+  if (parametersCache) {
+    return parametersCache;
+  }
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error(
-        "Missing required environment variables: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY"
-      );
+  try {
+    const client = new SSMClient({ region: process.env.AWS_REGION || 'eu-central-1' });
+    
+    const command = new GetParametersCommand({
+      Names: [
+        "/api-pulse/supabase-url",
+        "/api-pulse/supabase-service-role-key",
+        "/api-pulse/resend-api-key",
+        "/api-pulse/resend-from-email",
+        "/api-pulse/twilio-account-sid",
+        "/api-pulse/twilio-auth-token",
+        "/api-pulse/twilio-phone-number",
+        "/api-pulse/timeout-seconds"
+      ],
+      WithDecryption: true
+    });
+
+    const response = await client.send(command);
+    
+    if (!response.Parameters || response.Parameters.length === 0) {
+      throw new Error("No parameters found in Parameter Store");
     }
 
-    supabase = createClient(supabaseUrl, supabaseKey, {
+    // Parse parameters into a config object
+    const config = {};
+    response.Parameters.forEach(param => {
+      const key = param.Name.split('/').pop(); // Get last part after /
+      config[key.replace(/-/g, '_')] = param.Value; // Convert kebab-case to snake_case
+    });
+
+    // Validate required parameters
+    if (!config.supabase_url || !config.supabase_service_role_key) {
+      throw new Error("Missing required Supabase parameters");
+    }
+
+    parametersCache = config;
+    console.log("✅ Parameters loaded from Parameter Store");
+    return parametersCache;
+  } catch (error) {
+    console.error("❌ Failed to load parameters from Parameter Store:", error);
+    throw error;
+  }
+}
+
+/**
+ * Initialize Supabase client with parameters from Parameter Store
+ */
+async function getSupabaseClient() {
+  if (!supabase) {
+    const config = await getParameters();
+    
+    supabase = createClient(config.supabase_url, config.supabase_service_role_key, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
     });
+
+    console.log("✅ Supabase client initialized");
   }
 
   return supabase;
@@ -108,7 +160,7 @@ async function processMonitorCheck(message) {
 
   try {
     // Fetch current monitor data from database to ensure it's still active
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
     const { data: monitor, error: fetchError } = await supabase
       .from("monitors")
       .select("*")
@@ -184,9 +236,12 @@ async function performHealthCheck(monitorData) {
   let errorMessage = null;
 
   try {
+    // Get configuration from Parameter Store
+    const config = await getParameters();
+    
     // Create abort controller for timeout
+    const timeoutSeconds = monitorData.timeoutSeconds || parseInt(config.timeout_seconds) || 10;
     const controller = new AbortController();
-    const timeoutSeconds = monitorData.timeoutSeconds || 10;
     const timeoutId = setTimeout(
       () => controller.abort(),
       timeoutSeconds * 1000
@@ -196,7 +251,7 @@ async function performHealthCheck(monitorData) {
       method: "GET",
       signal: controller.signal,
       headers: {
-        "User-Agent": process.env.USER_AGENT || "API-Pulse-Lambda-Worker/1.0",
+        "User-Agent": "API-Pulse-Lambda-Worker/1.0",
         Accept: "application/json, text/html, */*",
         ...monitorData.headers,
       },
@@ -241,7 +296,7 @@ async function performHealthCheck(monitorData) {
  */
 async function getRecentMonitoringHistory(monitorId) {
   try {
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
     const { data: history, error } = await supabase
       .from("monitoring_history")
       .select("status, checked_at")
@@ -269,7 +324,7 @@ async function updateMonitorStatus(monitor, checkResult) {
     Date.now() + monitor.interval_minutes * 60 * 1000
   );
 
-  const supabase = getSupabaseClient();
+  const supabase = await getSupabaseClient();
   const { error } = await supabase
     .from("monitors")
     .update({
@@ -289,7 +344,7 @@ async function updateMonitorStatus(monitor, checkResult) {
  * Save comprehensive monitoring history for analytics
  */
 async function saveMonitoringHistory(monitor, checkResult) {
-  const supabase = getSupabaseClient();
+  const supabase = await getSupabaseClient();
   const { error } = await supabase.from("monitoring_history").insert({
     monitor_id: monitor.id,
     user_id: monitor.user_id,
@@ -323,7 +378,7 @@ async function checkAndTriggerAlerts(monitor, checkResult, history) {
   );
 
   try {
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
 
     // Get all active alert rules for this monitor with their notification channels
     const { data: alertRules, error: rulesError } = await supabase
@@ -483,7 +538,7 @@ async function isWithinCooldownPeriod(rule) {
   }
 
   try {
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
     const cooldownStart = new Date(
       Date.now() - rule.cooldown_minutes * 60 * 1000
     );
@@ -596,7 +651,7 @@ async function logAlert(
   alertResult
 ) {
   try {
-    const supabase = getSupabaseClient();
+    const supabase = await getSupabaseClient();
 
     const alertLog = {
       monitor_id: monitor.id,
@@ -652,32 +707,35 @@ function generateAlertMessage(monitor, newStatus, oldStatus) {
  * Email alert implementation with rich HTML templates
  */
 async function sendEmailAlert(context) {
-  if (!process.env.RESEND_API_KEY) {
-    return { success: false, error: "Resend not configured" };
-  }
-
-  const {
-    channel,
-    monitor,
-    triggerStatus,
-    previousStatus,
-    consecutiveFailures,
-    responseTime,
-  } = context;
-  const email = channel.config.email;
-
-  if (!email) {
-    return { success: false, error: "No email address configured" };
-  }
-
   try {
+    // Get Resend configuration from Parameter Store
+    const config = await getParameters();
+    
+    if (!config.resend_api_key) {
+      return { success: false, error: "Resend API key not configured" };
+    }
+
+    const {
+      channel,
+      monitor,
+      triggerStatus,
+      previousStatus,
+      consecutiveFailures,
+      responseTime,
+    } = context;
+    const email = channel.config.email;
+
+    if (!email) {
+      return { success: false, error: "No email address configured" };
+    }
+
     const { Resend } = require("resend");
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const resend = new Resend(config.resend_api_key);
 
     const { subject, html, text } = getEmailTemplate(context);
 
     const result = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "alerts@opreatudor.me",
+      from: config.resend_from_email || "alerts@opreatudor.me",
       to: email,
       subject,
       html,
@@ -697,22 +755,25 @@ async function sendEmailAlert(context) {
  * SMS alert implementation
  */
 async function sendSMSAlert(context) {
-  if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
-    return { success: false, error: "Twilio not configured" };
-  }
-
-  const { channel } = context;
-  const phone = channel.config.phone;
-
-  if (!phone) {
-    return { success: false, error: "No phone number configured" };
-  }
-
   try {
+    // Get Twilio configuration from Parameter Store
+    const config = await getParameters();
+    
+    if (!config.twilio_account_sid || !config.twilio_auth_token) {
+      return { success: false, error: "Twilio not configured" };
+    }
+
+    const { channel } = context;
+    const phone = channel.config.phone;
+
+    if (!phone) {
+      return { success: false, error: "No phone number configured" };
+    }
+
     const { Twilio } = require("twilio");
     const twilio = new Twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN
+      config.twilio_account_sid,
+      config.twilio_auth_token
     );
 
     const message = getSMSMessage(context);
@@ -720,7 +781,7 @@ async function sendSMSAlert(context) {
     const result = await twilio.messages.create({
       body: message,
       to: phone,
-      from: process.env.TWILIO_PHONE_NUMBER,
+      from: config.twilio_phone_number,
     });
 
     return { success: true, messageId: result.sid };
