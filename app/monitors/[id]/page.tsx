@@ -8,12 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink, Activity, Clock, Zap, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
-import { Header } from '@/components/header'
-import { StaticBackground } from '@/components/static-background'
-import MonitorOverviewCards from '@/components/monitor-overview-cards'
-import IncidentHistory from '@/components/incident-history'
-import MonitorSettings from '@/components/monitor-settings'
-import MonitorChartWrapper from '@/components/monitor-chart-wrapper'
+import { Header } from '@/components/layout/header'
+import { StaticBackground } from '@/components/layout/static-background'
+import MonitorOverviewCards from '@/components/dashboard/monitor/monitor-overview-cards'
+import IncidentHistory from '@/components/dashboard/alerts/incident-history'
+import MonitorSettings from '@/components/dashboard/monitor/monitor-settings'
+import MonitorChartWrapper from '@/components/dashboard/monitor/monitor-chart-wrapper'
 
 interface MonitorPageProps {
   params: Promise<{ id: string }>;
@@ -26,7 +26,7 @@ export default async function MonitorPage({ params }: MonitorPageProps) {
 
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/login')
   }
@@ -135,9 +135,9 @@ export default async function MonitorPage({ params }: MonitorPageProps) {
                     <div className="flex items-center gap-4 text-muted-foreground">
                       <span className="flex items-center gap-2">
                         <ExternalLink className="h-4 w-4" />
-                        <a 
-                          href={monitor.url} 
-                          target="_blank" 
+                        <a
+                          href={monitor.url}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="hover:text-primary transition-colors"
                         >
@@ -153,7 +153,7 @@ export default async function MonitorPage({ params }: MonitorPageProps) {
                   <div className="text-right">
                     <div className="text-sm text-muted-foreground">Last checked</div>
                     <div className="font-medium">
-                      {monitor.last_checked_at 
+                      {monitor.last_checked_at
                         ? new Date(monitor.last_checked_at).toLocaleString()
                         : 'Never'
                       }

@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import AddNotificationChannel from '@/components/add-notification-channel'
-import NotificationChannelsList from '@/components/notification-channels-list'
+import AddNotificationChannel from '@/components/dashboard/alerts/add-notification-channel'
+import NotificationChannelsList from '@/components/dashboard/alerts/notification-channels-list'
 import { Bell, Settings, History } from 'lucide-react'
 
 export default function AlertsPageClient() {
@@ -39,7 +39,7 @@ export default function AlertsPageClient() {
           <div>
             <AddNotificationChannel onSuccess={handleChannelSuccess} />
           </div>
-          
+
           {/* List Existing Channels */}
           <div>
             <NotificationChannelsList refreshTrigger={refreshTrigger} />
@@ -61,14 +61,14 @@ export default function AlertsPageClient() {
                 Receive detailed email notifications with monitor status, response times, and actionable insights.
               </p>
             </div>
-            
+
             <div>
               <h4 className="font-medium mb-2">📱 SMS Alerts</h4>
               <p className="text-sm text-muted-foreground">
                 Get instant text message alerts for critical monitor failures. Requires Twilio configuration.
               </p>
             </div>
-            
+
             <div>
               <h4 className="font-medium mb-2">🔗 Webhook Alerts</h4>
               <p className="text-sm text-muted-foreground">

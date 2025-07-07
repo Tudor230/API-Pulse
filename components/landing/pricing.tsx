@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { getStripe } from '@/lib/stripe-client'
 import { STRIPE_PRICE_IDS } from '@/lib/stripe-price-ids'
-import { useSubscription } from '@/lib/hooks/use-subscription'
+import { useSubscription } from '@/lib/contexts/SubscriptionContext'
 import { Check, X, Zap, Clock, BarChart3, Bell, Shield, Headphones } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useTheme } from 'next-themes'

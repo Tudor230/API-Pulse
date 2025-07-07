@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
-import { Header } from '@/components/header'
-import { StaticBackground } from '@/components/static-background'
+import { Header } from '@/components/layout/header'
+import { StaticBackground } from '@/components/layout/static-background'
 
 export default async function DashboardLayout({
   children,
@@ -9,9 +9,9 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/login')
   }

@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ResponseTimeTrend, UptimeStats, HourlyMonitorData } from '@/lib/supabase-types'
-import { useSubscription } from '@/lib/hooks/use-subscription'
+import { useSubscription } from '@/lib/contexts/SubscriptionContext'
 import ResponseTimeChart from "./response-time-chart";
 import UptimeChart from "./uptime-chart";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "../../ui/skeleton";
 
 interface MonitorChartWrapperProps {
     monitorId: string;

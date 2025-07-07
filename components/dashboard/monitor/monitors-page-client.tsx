@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSubscription } from '@/lib/hooks/use-subscription'
+import { useSubscription } from '@/lib/contexts/SubscriptionContext'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -40,7 +40,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 import Link from 'next/link'
-import AddMonitorForm from '@/components/add-monitor-form'
+import AddMonitorForm from '@/components/dashboard/monitor/add-monitor-form'
 
 interface MonitorsPageClientProps {
   monitors: Monitor[]

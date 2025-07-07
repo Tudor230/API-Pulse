@@ -1,14 +1,14 @@
 import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
-import { Header } from '@/components/header'
-import { StaticBackground } from '@/components/static-background'
-import { MonitorsPageClient } from '@/components/monitors-page-client'
+import { Header } from '@/components/layout/header'
+import { StaticBackground } from '@/components/layout/static-background'
+import { MonitorsPageClient } from '@/components/dashboard/monitor/monitors-page-client'
 
 export default async function MonitorsPage() {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/login')
   }

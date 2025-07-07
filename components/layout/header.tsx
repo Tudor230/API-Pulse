@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { LogoutButton } from "@/components/auth/logout-button"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { LogoFull, LogoMark } from "@/components/ui/logo"
 
 interface HeaderProps {

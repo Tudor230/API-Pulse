@@ -1,8 +1,8 @@
-import { Header } from "@/components/header"
-import { HeroSection } from "@/components/hero-section"
-import { FeaturesSection } from "@/components/features-section"
-import PricingComponent from "@/components/pricing"
-import { AnimatedBackground } from "@/components/animated-background"
+import { Header } from "@/components/layout/header"
+import { HeroSection } from "@/components/landing/hero-section"
+import { FeaturesSection } from "@/components/landing/features-section"
+import PricingComponent from "@/components/landing/pricing"
+import { AnimatedBackground } from "@/components/layout/animated-background"
 import { createClient } from '@/lib/supabase-server'
 
 export default async function HomePage() {

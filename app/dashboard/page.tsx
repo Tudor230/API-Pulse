@@ -3,18 +3,18 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import AddMonitorForm from '@/components/add-monitor-form'
-import MonitorsList from '@/components/monitors-list'
-import ResponseTimeAnalytics from '@/components/response-time-analytics'
-import { SubscriptionStatus } from '@/components/subscription-status'
+import AddMonitorForm from '@/components/dashboard/monitor/add-monitor-form'
+import MonitorsList from '@/components/dashboard/monitor/monitors-list'
+import ResponseTimeAnalytics from '@/components/dashboard/monitor/response-time-analytics'
+import { SubscriptionStatus } from '@/components/dashboard/subscription/subscription-status'
 import { Monitor } from '@/lib/supabase-types'
 import { Activity, AlertTriangle, CheckCircle, Clock, Timer, TrendingUp } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/login')
   }
@@ -35,11 +35,11 @@ export default async function DashboardPage() {
   const totalMonitors = monitorsList.length
   const upMonitors = monitorsList.filter(m => m.status === 'up').length
   const downMonitors = monitorsList.filter(m => m.status === 'down').length
-  const pendingMonitors = monitorsList.filter(m => m.status === 'pending').length  
+  const pendingMonitors = monitorsList.filter(m => m.status === 'pending').length
   const timeoutMonitors = monitorsList.filter(m => m.status === 'timeout').length
   // Calculate average response time only from 'up' monitors with valid response times
   const upMonitorsWithResponseTime = monitorsList.filter(m => m.status === 'up' && m.response_time !== null)
-  const avgResponseTime = upMonitorsWithResponseTime.length > 0 
+  const avgResponseTime = upMonitorsWithResponseTime.length > 0
     ? Math.round(upMonitorsWithResponseTime.reduce((acc, m) => acc + (m.response_time || 0), 0) / upMonitorsWithResponseTime.length)
     : 0
 
@@ -133,7 +133,7 @@ export default async function DashboardPage() {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            {downMonitors} monitor{downMonitors > 1 ? 's are' : ' is'} currently down. 
+            {downMonitors} monitor{downMonitors > 1 ? 's are' : ' is'} currently down.
             Check your monitors list below for details.
           </AlertDescription>
         </Alert>
@@ -143,7 +143,7 @@ export default async function DashboardPage() {
         <Alert variant="default" className="border-warning/20 bg-warning/10">
           <Timer className="h-4 w-4 text-warning" />
           <AlertDescription className="text-warning-foreground">
-            {timeoutMonitors} monitor{timeoutMonitors > 1 ? 's are' : ' is'} experiencing timeouts. 
+            {timeoutMonitors} monitor{timeoutMonitors > 1 ? 's are' : ' is'} experiencing timeouts.
             These APIs may be slow or overloaded.
           </AlertDescription>
         </Alert>
@@ -175,9 +175,9 @@ export default async function DashboardPage() {
           <AddMonitorForm />
         </div>
 
-                {/* Response Time Analytics */}
+        {/* Response Time Analytics */}
         <div className="lg:col-span-2">
-          <ResponseTimeAnalytics 
+          <ResponseTimeAnalytics
             monitors={monitorsList}
             avgResponseTime={avgResponseTime}
             upMonitorsWithResponseTime={upMonitorsWithResponseTime}

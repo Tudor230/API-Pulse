@@ -1,16 +1,16 @@
 import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Header } from '@/components/header'
-import { StaticBackground } from '@/components/static-background'
-import AlertsPageClient from '@/components/alerts-page-client'
+import { Header } from '@/components/layout/header'
+import { StaticBackground } from '@/components/layout/static-background'
+import AlertsPageClient from '@/components/dashboard/alerts/alerts-page-client'
 import { Bell, AlertTriangle } from 'lucide-react'
 
 export default async function AlertsPage() {
   const supabase = await createClient()
-  
+
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     redirect('/login')
   }
@@ -27,7 +27,7 @@ export default async function AlertsPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <StaticBackground />
       <Header user={user} />
-      
+
       <main className="container mx-auto px-4 py-8 relative z-10">
         <div className="max-w-6xl mx-auto">
           {/* Page Header */}
@@ -48,7 +48,7 @@ export default async function AlertsPage() {
             <Alert className="mb-8">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                You don&apos;t have any monitors yet. 
+                You don&apos;t have any monitors yet.
                 <a href="/dashboard" className="underline ml-1">Create your first monitor</a> to start receiving alerts.
               </AlertDescription>
             </Alert>

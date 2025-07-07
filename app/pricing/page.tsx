@@ -1,6 +1,6 @@
-import { Header } from "@/components/header"
-import PricingComponent from "@/components/pricing"
-import { AnimatedBackground } from "@/components/animated-background"
+import { Header } from "@/components/layout/header"
+import PricingComponent from "@/components/landing/pricing"
+import { AnimatedBackground } from "@/components/layout/animated-background"
 import { createClient } from '@/lib/supabase-server'
 
 export default async function PricingPage() {
