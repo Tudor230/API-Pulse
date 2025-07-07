@@ -35,23 +35,25 @@ export default function MonitorChartWrapper({
     detailed = false
 }: MonitorChartWrapperProps) {
     const { getAllowedTimeframes, isFreePlan } = useSubscription()
-    const [timeFrame, setTimeFrame] = useState('24h');
+    const allowedTimeframes = getAllowedTimeframes()
+
+    // Calculate initial timeframe based on user's plan
+    const getInitialTimeframe = () => {
+        if (allowedTimeframes.includes('24h')) {
+            return '24h'; // Pro users get 24h
+        }
+        return allowedTimeframes[allowedTimeframes.length - 1] || '6h'; // Free users get last allowed timeframe
+    }
+
+    const [timeFrame, setTimeFrame] = useState(getInitialTimeframe);
     const [data, setData] = useState(initialData);
     const [isLoading, setIsLoading] = useState(false);
-
-    const allowedTimeframes = getAllowedTimeframes()
+    const [hasInitialized, setHasInitialized] = useState(false);
 
     // Filter timeframe options based on user's plan
     const timeFrameOptions = allTimeFrameOptions.filter(option =>
         allowedTimeframes.includes(option.value)
     )
-
-    // Ensure the selected timeframe is allowed, fallback to first allowed option
-    useEffect(() => {
-        if (!allowedTimeframes.includes(timeFrame)) {
-            setTimeFrame(allowedTimeframes[0] || '1h')
-        }
-    }, [allowedTimeframes, timeFrame])
 
     const handleTimeFrameChange = useCallback(async (newTimeFrame: string) => {
         const selectedOption = timeFrameOptions.find(opt => opt.value === newTimeFrame);
@@ -91,6 +93,18 @@ export default function MonitorChartWrapper({
             setIsLoading(false);
         }
     }, [monitorId, initialData, timeFrameOptions]);
+
+    // Initialize data for the correct timeframe (only run once on mount)
+    useEffect(() => {
+        if (!hasInitialized && allowedTimeframes.length > 0) {
+            setHasInitialized(true);
+
+            // If user can't access 24h data and we're not showing 24h, fetch correct data
+            if (!allowedTimeframes.includes('24h') && timeFrame !== '24h') {
+                handleTimeFrameChange(timeFrame);
+            }
+        }
+    }, [allowedTimeframes, timeFrame, hasInitialized, handleTimeFrameChange]);
 
     if (isLoading) {
         return <Skeleton className="h-[420px] w-full" />;
