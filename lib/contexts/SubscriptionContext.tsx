@@ -1,11 +1,18 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { 
-  UserSubscription, 
-  PlanLimits, 
-  SubscriptionUsage, 
-  AlertType 
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback
+} from 'react'
+import {
+  UserSubscription,
+  PlanLimits,
+  SubscriptionUsage,
+  AlertType
 } from '@/lib/supabase-types'
 
 interface SubscriptionData {
@@ -18,7 +25,7 @@ interface SubscriptionData {
   }
 }
 
-interface UseSubscriptionReturn {
+interface SubscriptionContextType {
   data: SubscriptionData | null
   loading: boolean
   error: string | null
@@ -34,12 +41,14 @@ interface UseSubscriptionReturn {
   getAllowedTimeframes: () => string[]
 }
 
-export function useSubscription(): UseSubscriptionReturn {
+const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined)
+
+export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchSubscriptionData = async () => {
+  const fetchSubscriptionData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -56,7 +65,7 @@ export function useSubscription(): UseSubscriptionReturn {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const checkLimit = async (type: string, value?: any): Promise<boolean> => {
     try {
@@ -91,7 +100,7 @@ export function useSubscription(): UseSubscriptionReturn {
 
   useEffect(() => {
     fetchSubscriptionData()
-  }, [])
+  }, [fetchSubscriptionData])
 
   const isFreePlan = data?.subscription?.plan === 'free' || !data?.subscription
   const isProPlan = data?.subscription?.plan === 'pro' && data?.subscription?.status === 'active'
@@ -108,7 +117,7 @@ export function useSubscription(): UseSubscriptionReturn {
     return data?.planLimits?.allowed_chart_timeframes || ['1h', '6h']
   }
 
-  return {
+  const value = {
     data,
     loading,
     error,
@@ -123,36 +132,18 @@ export function useSubscription(): UseSubscriptionReturn {
     getAllowedNotificationTypes,
     getAllowedTimeframes
   }
+
+  return (
+    <SubscriptionContext.Provider value={value}>
+      {children}
+    </SubscriptionContext.Provider>
+  )
 }
 
-// Hook for plan limits (can be used on public pages like pricing)
-export function usePlanLimits() {
-  const [plans, setPlans] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchPlanLimits = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-
-        const response = await fetch('/api/plan-limits')
-        if (!response.ok) {
-          throw new Error('Failed to fetch plan limits')
-        }
-
-        const data = await response.json()
-        setPlans(data.plans)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchPlanLimits()
-  }, [])
-
-  return { plans, loading, error }
+export function useSubscription() {
+  const context = useContext(SubscriptionContext)
+  if (context === undefined) {
+    throw new Error('useSubscription must be used within a SubscriptionProvider')
+  }
+  return context
 }
