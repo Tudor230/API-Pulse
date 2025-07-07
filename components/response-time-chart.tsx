@@ -177,7 +177,7 @@ export default function ResponseTimeChart({
               Average response time: {safeAvgResponseTime.toFixed(0)}ms
               {stats && (
                 <>
-                  {stats.trendChange === 0 ? (
+                  {stats.trendChange === 0 || isNaN(stats.trendChange) ? (
                     <span className="ml-2 inline-flex items-center gap-1 text-muted-foreground">
                       <ArrowRight className="h-3 w-3" />
                       No trend
