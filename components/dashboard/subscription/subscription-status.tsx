@@ -62,7 +62,7 @@ export function SubscriptionStatus() {
         <div className="flex items-center gap-2">
           {isFreePlan && (
             <Button size="sm" asChild>
-              <Link href="/pricing">
+              <Link href="/#pricing">
                 Upgrade to Pro
               </Link>
             </Button>
@@ -231,7 +231,7 @@ export function SubscriptionStatus() {
                   </p>
                 </div>
                 <Button size="sm" asChild>
-                  <Link href="/pricing">
+                  <Link href="/#pricing">
                     Upgrade Now
                   </Link>
                 </Button>

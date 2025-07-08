@@ -51,19 +51,19 @@ export function Header({ user }: HeaderProps) {
               // Unauthenticated navigation
               <>
                 <Link
-                  href="#features"
+                  href="/#features"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Features
                 </Link>
                 <Link
-                  href="/pricing"
+                  href="/#pricing"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Pricing
                 </Link>
                 <Link
-                  href="#docs"
+                  href="/#docs"
                   className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
                 >
                   Docs
