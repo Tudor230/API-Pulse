@@ -114,7 +114,7 @@ CREATE POLICY "Authenticated users can view plan limits" ON public.plan_limits
 -- Insert default plan limits
 INSERT INTO public.plan_limits (plan, max_monitors, allowed_intervals, allowed_notification_types, max_notification_channels, allowed_chart_timeframes, api_rate_limit, priority_support) VALUES
 ('free', 3, ARRAY[30, 60], ARRAY['email'::alert_type], 1, ARRAY['1h', '6h'], 100, false),
-('pro', -1, ARRAY[1, 5, 10, 15, 30, 60], ARRAY['email'::alert_type, 'sms'::alert_type, 'webhook'::alert_type], -1, ARRAY['1h', '6h', '24h', '7d', '30d'], 10000, true);
+('pro', 10, ARRAY[1, 5, 10, 15, 30, 60], ARRAY['email'::alert_type, 'sms'::alert_type, 'webhook'::alert_type], -1, ARRAY['1h', '6h', '24h', '7d', '30d'], 10000, true);
 
 -- Function to create default subscription for new users
 CREATE OR REPLACE FUNCTION create_default_subscription()
