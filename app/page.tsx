@@ -2,9 +2,8 @@
 
 import { Header } from "@/components/layout/header"
 import { HeroSection } from "@/components/landing/hero-section"
-import { FeaturesSectionWithHoverEffects } from "@/components/feature-section-with-hover-effects"
+import { FeaturesSectionWithHoverEffects } from "@/components/landing/feature-section"
 import { Pricing } from "@/components/landing/pricing"
-import { AnimatedBackground } from "@/components/layout/animated-background"
 import { createClient } from '@/lib/supabase-client'
 import { SparklesCore } from "@/components/ui/sparkles"
 import { useTheme } from "next-themes"
