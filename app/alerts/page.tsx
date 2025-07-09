@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Header } from '@/components/layout/header'
-import { StaticBackground } from '@/components/layout/static-background'
+import { UnifiedBackground } from '@/components/layout/unified-background'
 import AlertsPageClient from '@/components/dashboard/alerts/alerts-page-client'
 import { Bell, AlertTriangle } from 'lucide-react'
 
@@ -25,7 +25,7 @@ export default async function AlertsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <StaticBackground />
+      <UnifiedBackground />
       <Header user={user} />
 
       <main className="container mx-auto px-4 py-8 relative z-10">

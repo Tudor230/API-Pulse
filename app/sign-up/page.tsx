@@ -1,6 +1,6 @@
 import { SignUpForm } from "@/components/auth/sign-up-form"
 import { Header } from "@/components/layout/header"
-import { StaticBackground } from "@/components/layout/static-background"
+import { UnifiedBackground } from "@/components/layout/unified-background"
 import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 
@@ -16,7 +16,7 @@ export default async function SignUpPage() {
 
   return (
     <div className="relative min-h-screen flex flex-col">
-      <StaticBackground />
+      <UnifiedBackground />
       <div className="relative z-10 flex flex-col min-h-screen">
         <Header user={null} />
 

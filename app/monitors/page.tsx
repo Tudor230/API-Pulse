@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/header'
-import { StaticBackground } from '@/components/layout/static-background'
+import { UnifiedBackground } from '@/components/layout/unified-background'
 import { MonitorsPageClient } from '@/components/dashboard/monitor/monitors-page-client'
 
 export default async function MonitorsPage() {
@@ -43,7 +43,7 @@ export default async function MonitorsPage() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <StaticBackground />
+      <UnifiedBackground />
       <div className="relative z-10">
         <Header user={user} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

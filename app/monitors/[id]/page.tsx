@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink, Activity, Clock, Zap, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
 import { Header } from '@/components/layout/header'
-import { StaticBackground } from '@/components/layout/static-background'
+import { UnifiedBackground } from '@/components/layout/unified-background'
 import MonitorOverviewCards from '@/components/dashboard/monitor/monitor-overview-cards'
 import IncidentHistory from '@/components/dashboard/alerts/incident-history'
 import MonitorSettings from '@/components/dashboard/monitor/monitor-settings'
@@ -107,7 +107,7 @@ export default async function MonitorPage({ params }: MonitorPageProps) {
 
   return (
     <div className="relative min-h-screen">
-      <StaticBackground />
+      <UnifiedBackground />
       <div className="relative z-10">
         <Header user={user} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
