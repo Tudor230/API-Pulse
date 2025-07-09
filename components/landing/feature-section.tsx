@@ -81,27 +81,27 @@ const Feature = ({
   return (
     <div
       className={cn(
-        "flex flex-col lg:border-r py-10 relative group/feature dark:border-neutral-800 hover:border-blue-200 dark:hover:border-blue-800 transition-colors duration-300",
-        (index === 0 || index === 4) && "lg:border-l dark:border-neutral-800 hover:border-blue-200 dark:hover:border-blue-800",
-        index < 4 && "lg:border-b dark:border-neutral-800 hover:border-blue-200 dark:hover:border-blue-800"
+        "flex flex-col lg:border-r py-10 relative group/feature border-border hover:border-primary/30 transition-colors duration-300",
+        (index === 0 || index === 4) && "lg:border-l border-border hover:border-primary/30",
+        index < 4 && "lg:border-b border-border hover:border-primary/30"
       )}
     >
       {index < 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-300 absolute inset-0 h-full w-full bg-gradient-to-t from-blue-50 dark:from-blue-950/20 to-transparent pointer-events-none" />
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-300 absolute inset-0 h-full w-full bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
       )}
       {index >= 4 && (
-        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-300 absolute inset-0 h-full w-full bg-gradient-to-b from-blue-50 dark:from-blue-950/20 to-transparent pointer-events-none" />
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-300 absolute inset-0 h-full w-full bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
       )}
-      <div className="mb-4 relative z-10 px-10 text-neutral-600 dark:text-neutral-400 group-hover/feature:text-blue-600 dark:group-hover/feature:text-blue-400 transition-colors duration-300">
+      <div className="mb-4 relative z-10 px-10 text-muted-foreground group-hover/feature:text-primary transition-colors duration-300">
         {icon}
       </div>
       <div className="text-lg font-bold mb-2 relative z-10 px-10">
-        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-neutral-300 dark:bg-neutral-700 group-hover/feature:bg-gradient-to-b group-hover/feature:from-blue-500 group-hover/feature:to-indigo-600 transition-all duration-300 origin-center group-hover/feature:shadow-lg group-hover/feature:shadow-blue-500/25" />
-        <span className="group-hover/feature:translate-x-2 transition duration-300 inline-block text-neutral-800 dark:text-neutral-100 group-hover/feature:text-blue-600 dark:group-hover/feature:text-blue-400">
+        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-muted group-hover/feature:bg-gradient-to-b group-hover/feature:from-primary group-hover/feature:to-primary/80 transition-all duration-300 origin-center group-hover/feature:shadow-lg group-hover/feature:shadow-primary/25" />
+        <span className="group-hover/feature:translate-x-2 transition duration-300 inline-block text-foreground group-hover/feature:text-primary">
           {title}
         </span>
       </div>
-      <p className="text-sm text-neutral-600 dark:text-neutral-300 max-w-xs relative z-10 px-10 group-hover/feature:text-neutral-700 dark:group-hover/feature:text-neutral-200 transition-colors duration-300">
+      <p className="text-sm text-muted-foreground max-w-xs relative z-10 px-10 group-hover/feature:text-foreground transition-colors duration-300">
         {description}
       </p>
     </div>

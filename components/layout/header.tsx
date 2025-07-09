@@ -16,11 +16,6 @@ interface HeaderProps {
 export function Header({ user }: HeaderProps) {
   const { theme } = useTheme()
 
-  // Theme-aware gradient colors
-  const gradientColors = theme === 'dark'
-    ? 'from-blue-500 to-purple-600'
-    : 'from-blue-600 to-indigo-600'
-
   const shadowColor = theme === 'dark'
     ? 'shadow-blue-500/25'
     : 'shadow-blue-600/25'
@@ -58,24 +53,24 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <Link
                     href="/dashboard"
-                    className="text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
+                    className="text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
                   >
                     Dashboard
-                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
                   </Link>
                   <Link
                     href="/monitors"
-                    className="text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
+                    className="text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
                   >
                     Monitors
-                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
                   </Link>
                   <Link
                     href="/alerts"
-                    className="text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
+                    className="text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
                   >
                     Alerts
-                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
                   </Link>
                 </>
               ) : (
@@ -83,24 +78,24 @@ export function Header({ user }: HeaderProps) {
                 <>
                   <Link
                     href="/#features"
-                    className="text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
+                    className="text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
                   >
                     Features
-                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
                   </Link>
                   <Link
                     href="/#pricing"
-                    className="text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
+                    className="text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
                   >
                     Pricing
-                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
                   </Link>
                   <Link
                     href="/#docs"
-                    className="text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
+                    className="text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-indigo-400 transition-all duration-300 font-medium relative group"
                   >
                     Docs
-                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                    <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
                   </Link>
                 </>
               )}
@@ -129,7 +124,7 @@ export function Header({ user }: HeaderProps) {
                       </Link>
                     </Button>
                   </div>
-                  <div className={`bg-gradient-to-r ${gradientColors} backdrop-blur-md rounded-full border ${borderColor} shadow-lg ${shadowColor}`}>
+                  <div className={`bg-gradient-to-r from-blue-600 to-indigo-600 backdrop-blur-md rounded-full border ${borderColor} shadow-lg ${shadowColor}`}>
                     <Button asChild className="bg-transparent hover:bg-white/10 text-white border-0 shadow-none transition-all duration-300">
                       <Link href="/sign-up">
                         Get Started

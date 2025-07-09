@@ -283,7 +283,7 @@ export function Pricing({
                       "group relative w-full gap-2 overflow-hidden text-lg font-semibold tracking-tighter",
                       "transform-gpu ring-offset-current transition-all duration-300 ease-out hover:ring-2 hover:ring-primary hover:ring-offset-1 hover:bg-primary hover:text-primary-foreground",
                       plan.isPopular
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-primary text-white"
                         : "bg-background text-foreground",
                       isLoading === plan.name && "opacity-50 cursor-not-allowed"
                     )}
