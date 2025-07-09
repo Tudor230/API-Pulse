@@ -61,6 +61,12 @@ export function Pricing({
       return;
     }
 
+    if (plan.planType === 'enterprise') {
+      // For enterprise plan, redirect to contact page
+      window.location.href = '/contact';
+      return;
+    }
+
     if (!plan.stripeMonthlyPriceId || !plan.stripeYearlyPriceId) {
       console.error('Missing Stripe price IDs for plan:', plan.name);
       return;
