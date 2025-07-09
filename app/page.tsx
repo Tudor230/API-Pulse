@@ -77,6 +77,7 @@ export default function HomePage() {
   const { theme } = useTheme()
   const [user, setUser] = useState<User | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [userLoaded, setUserLoaded] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -84,35 +85,18 @@ export default function HomePage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      setUserLoaded(true)
     }
     getUser()
   }, [])
 
-  // Prevent hydration mismatch by not rendering theme-dependent content until mounted
-  if (!mounted) {
+  // Prevent hydration mismatch and ensure everything is loaded before rendering
+  if (!mounted || !userLoaded) {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-        <div className="fixed inset-0 w-full h-full pointer-events-none" style={{ height: '100vh', minHeight: '100%' }}>
-          <SparklesCore
-            id="tsparticlescolorful"
-            background="transparent"
-            minSize={0.6}
-            maxSize={1.4}
-            particleDensity={100}
-            className="w-full h-full"
-            particleColor="#6366f1"
-            speed={0.5}
-          />
-        </div>
-        <div className="relative z-10">
-          <Header user={user} />
-          <main>
-            <HeroSection user={user} />
-            <FeaturesSectionWithHoverEffects />
-            <section id="pricing" className="container mx-auto px-4 py-16">
-              <Pricing plans={demoPlans} />
-            </section>
-          </main>
+      <div className="relative min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-300">Loading...</p>
         </div>
       </div>
     )
