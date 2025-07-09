@@ -42,7 +42,7 @@ function formatDate(dateString: string | null) {
   const date = new Date(dateString)
   const now = new Date()
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
-  
+
   if (diffInMinutes < 1) return 'Just now'
   if (diffInMinutes < 60) return `${diffInMinutes}m ago`
   if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
@@ -146,13 +146,22 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
             <TableBody>
               {monitors.map((monitor) => (
                 <TableRow key={monitor.id}>
-                  <TableCell className="font-medium">{monitor.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span>{monitor.name}</span>
+                      {!monitor.is_active && (
+                        <Badge variant="outline" className="text-xs px-2 py-0 text-muted-foreground border-muted-foreground/20">
+                          Disabled
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span className="truncate max-w-xs">{monitor.url}</span>
-                      <a 
-                        href={monitor.url} 
-                        target="_blank" 
+                      <a
+                        href={monitor.url}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-muted-foreground hover:text-primary"
                       >
@@ -161,7 +170,7 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge 
+                    <Badge
                       variant={getStatusVariant(monitor.status)}
                       className={monitor.status === 'timeout' ? 'border-warning text-warning bg-warning/10' : ''}
                     >

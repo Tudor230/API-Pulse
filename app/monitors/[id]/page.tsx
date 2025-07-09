@@ -130,6 +130,11 @@ export default async function MonitorPage({ params }: MonitorPageProps) {
                     <div className="flex items-center gap-3">
                       {getStatusIcon(monitor.status)}
                       <h1 className="text-3xl font-bold text-foreground">{monitor.name}</h1>
+                      {!monitor.is_active && (
+                        <Badge variant="outline" className="text-sm px-3 py-1 text-muted-foreground border-muted-foreground/20">
+                          Disabled
+                        </Badge>
+                      )}
                       {getStatusBadge(monitor.status)}
                     </div>
                     <div className="flex items-center gap-4 text-muted-foreground">

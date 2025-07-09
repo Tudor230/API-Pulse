@@ -729,7 +729,14 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                           <TableCell>
                             <div>
                               <div className="font-medium flex items-center gap-2">
-                                {monitor.name}
+                                <span>
+                                  {monitor.name}
+                                </span>
+                                {!monitor.is_active && (
+                                  <Badge variant="outline" className="text-xs px-2 py-0 text-muted-foreground border-muted-foreground/20">
+                                    Disabled
+                                  </Badge>
+                                )}
                                 <a
                                   href={monitor.url}
                                   target="_blank"
