@@ -2,7 +2,7 @@
 
 import { Header } from "@/components/layout/header"
 import { HeroSection } from "@/components/landing/hero-section"
-import { FeaturesSection } from "@/components/landing/features-section"
+import { FeaturesSectionWithHoverEffects } from "@/components/feature-section-with-hover-effects"
 import { Pricing } from "@/components/landing/pricing"
 import { AnimatedBackground } from "@/components/layout/animated-background"
 import { createClient } from '@/lib/supabase-client'
@@ -108,7 +108,7 @@ export default function HomePage() {
           <Header user={user} />
           <main>
             <HeroSection user={user} />
-            <FeaturesSection />
+            <FeaturesSectionWithHoverEffects />
             <section id="pricing" className="container mx-auto px-4 py-16">
               <Pricing plans={demoPlans} />
             </section>
@@ -139,7 +139,7 @@ export default function HomePage() {
         <Header user={user} />
         <main>
           <HeroSection user={user} />
-          <FeaturesSection />
+          <FeaturesSectionWithHoverEffects />
           <section id="pricing" className="container mx-auto px-4 py-16">
             <Pricing plans={demoPlans} />
           </section>

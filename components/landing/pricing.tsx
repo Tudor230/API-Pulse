@@ -192,10 +192,12 @@ export function Pricing({
               opacity: { duration: 0.5 },
             }}
             className={cn(
-              `rounded-2xl border-[1px] p-6 bg-background text-center lg:flex lg:flex-col lg:justify-center relative`,
+              `rounded-2xl border-[1px] p-6  text-center lg:flex lg:flex-col lg:justify-center relative`,
+              "bg-background/20 backdrop-blur-lg border-white/20 dark:border-white/10",
+              "shadow-xl shadow-black/5 dark:shadow-black/20",
               plan.isPopular ? "border-primary border-2" : "border-border",
               "flex flex-col",
-              !plan.isPopular && "mt-5",
+              // plan.isPopular ? "mb-3" : "mt-5",
               index === 0 || index === 2
                 ? "z-0 transform translate-x-0 translate-y-0 -translate-z-[50px] rotate-y-[10deg]"
                 : "z-10",
