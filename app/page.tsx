@@ -81,13 +81,22 @@ export default function HomePage() {
 
   useEffect(() => {
     setMounted(true)
+    const supabase = createClient()
+
     const getUser = async () => {
-      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       setUserLoaded(true)
     }
+
     getUser()
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   // Prevent hydration mismatch and ensure everything is loaded before rendering
@@ -104,6 +113,9 @@ export default function HomePage() {
 
   // Dynamic particle color based on theme
   const particleColor = theme === 'dark' ? '#6366f1' : '#3b82f6'
+
+  // Debug log to see current user state
+  console.log('Current user state in HomePage:', user)
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
