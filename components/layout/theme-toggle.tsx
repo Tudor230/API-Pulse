@@ -43,7 +43,7 @@ export function ThemeToggle() {
   }
 
   return (
-    <Button variant="outline" size="icon" onClick={toggleTheme}>
+    <Button variant="outline" size="icon" onClick={toggleTheme} className="mt-1.5">
       {getIcon()}
       <span className="sr-only">Toggle theme</span>
     </Button>

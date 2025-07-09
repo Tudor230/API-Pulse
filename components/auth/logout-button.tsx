@@ -12,7 +12,7 @@ export function LogoutButton() {
 
   const handleLogout = async () => {
     setIsLoading(true)
-    
+
     try {
       await supabase.auth.signOut()
       router.push('/')
@@ -30,6 +30,7 @@ export function LogoutButton() {
       onClick={handleLogout}
       disabled={isLoading}
       size="sm"
+      className="mt-1.5"
     >
       {isLoading ? "Signing out..." : "Sign out"}
     </Button>
