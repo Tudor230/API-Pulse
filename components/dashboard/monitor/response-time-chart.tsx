@@ -161,14 +161,12 @@ export default function ResponseTimeChart({
       const date = new Date(item.checked_at);
       let timeFormat: string;
 
-      if (timeFrame === '7d' || timeFrame === '30d') {
+      if (timeFrame === '30d') {
+        timeFormat = date.getDate().toString(); // Only day number for 30d
+      } else if (timeFrame === '7d') {
         timeFormat = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       } else {
-        timeFormat = date.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        });
+        timeFormat = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false });
       }
 
       return {

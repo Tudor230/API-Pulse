@@ -75,7 +75,7 @@ export default async function MonitorPage({ params }: MonitorPageProps) {
     .eq('monitor_id', id)
     .gte('checked_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
     .order('checked_at', { ascending: false })
-    .limit(100)
+    .limit(11000)
 
   const getStatusIcon = (status: Monitor['status']) => {
     switch (status) {

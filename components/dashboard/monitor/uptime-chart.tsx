@@ -157,7 +157,9 @@ export default function UptimeChart({
       const date = new Date(item.hour_bucket);
       let timeFormat: string;
 
-      if (timeFrame === '7d' || timeFrame === '30d') {
+      if (timeFrame === '30d') {
+        timeFormat = date.getDate().toString(); // Only day number for 30d
+      } else if (timeFrame === '7d') {
         timeFormat = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       } else {
         timeFormat = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false });
