@@ -1,7 +1,4 @@
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import { ContainerScroll } from "@/components/ui/container-scroll-animation"
-import MonitorsList from "@/components/dashboard/monitor/monitors-list"
 import { Monitor } from "@/lib/supabase-types"
 
 interface HeroSectionProps {

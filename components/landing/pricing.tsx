@@ -162,7 +162,7 @@ export function Pricing({
             />
           </Label>
         </label>
-        <span className="ml-2 font-semibold">
+        <span className="ml-2 mb-0.5 font-semibold">
           Annual billing <span className="text-primary">(Save 20%)</span>
         </span>
       </div>
