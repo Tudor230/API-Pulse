@@ -117,14 +117,14 @@ export function Header({ user }: HeaderProps) {
               ) : (
                 // Unauthenticated auth buttons
                 <>
-                  <div className="bg-white/20 dark:bg-slate-800/30 backdrop-blur-md rounded-full border border-white/20 dark:border-slate-700/50 shadow-lg">
+                  <div className="mt-1 bg-white/20 dark:bg-slate-800/30 backdrop-blur-md rounded-full border border-white/20 dark:border-slate-700/50 shadow-lg">
                     <Button asChild variant="ghost" className="text-slate-700 dark:text-slate-200 hover:bg-white/10 dark:hover:bg-slate-700/30 transition-all duration-300 border-0 bg-transparent rounded-full">
                       <Link href="/login">
                         Sign In
                       </Link>
                     </Button>
                   </div>
-                  <div className={`bg-gradient-to-r from-blue-600 to-indigo-600 backdrop-blur-md rounded-full border ${borderColor} shadow-lg ${shadowColor}`}>
+                  <div className={`bg-gradient-to-r from-blue-600 to-indigo-600 backdrop-blur-md rounded-full border ${borderColor} shadow-lg ${shadowColor} mt-1`}>
                     <Button asChild className="bg-transparent hover:bg-white/10 text-white border-0 shadow-none transition-all duration-300 rounded-full">
                       <Link href="/sign-up">
                         Get Started
