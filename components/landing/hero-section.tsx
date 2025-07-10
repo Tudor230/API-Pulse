@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ContainerScroll } from "@/components/ui/container-scroll-animation"
+import MonitorsList from "@/components/dashboard/monitor/monitors-list"
+import { Monitor } from "@/lib/supabase-types"
 
 interface HeroSectionProps {
   user?: {
@@ -8,6 +10,66 @@ interface HeroSectionProps {
     email?: string
   } | null
 }
+
+// Mock data for the hero section demo
+const mockMonitors: Monitor[] = [
+  {
+    id: "1",
+    user_id: "demo",
+    name: "API Gateway",
+    url: "https://api.example.com/health",
+    status: "up",
+    interval_minutes: 5,
+    is_active: true,
+    response_time: 156,
+    last_checked_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(), // 2 minutes ago
+    next_check_at: new Date(Date.now() + 3 * 60 * 1000).toISOString(), // 3 minutes from now
+    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+    updated_at: new Date(Date.now() - 2 * 60 * 1000).toISOString()
+  },
+  {
+    id: "2",
+    user_id: "demo",
+    name: "Payment Service",
+    url: "https://payments.service.com/status",
+    status: "up",
+    interval_minutes: 10,
+    is_active: true,
+    response_time: 89,
+    last_checked_at: new Date(Date.now() - 1 * 60 * 1000).toISOString(), // 1 minute ago
+    next_check_at: new Date(Date.now() + 9 * 60 * 1000).toISOString(), // 9 minutes from now
+    created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), // 15 days ago
+    updated_at: new Date(Date.now() - 1 * 60 * 1000).toISOString()
+  },
+  {
+    id: "3",
+    user_id: "demo",
+    name: "Analytics Engine",
+    url: "https://analytics.domain.com/ping",
+    status: "timeout",
+    interval_minutes: 15,
+    is_active: true,
+    response_time: 1200,
+    last_checked_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
+    next_check_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes from now
+    created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
+    updated_at: new Date(Date.now() - 5 * 60 * 1000).toISOString()
+  },
+  {
+    id: "4",
+    user_id: "demo",
+    name: "User Authentication",
+    url: "https://auth.myapp.com/health",
+    status: "up",
+    interval_minutes: 5,
+    is_active: true,
+    response_time: 234,
+    last_checked_at: new Date(Date.now() - 3 * 60 * 1000).toISOString(), // 3 minutes ago
+    next_check_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(), // 2 minutes from now
+    created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(), // 45 days ago
+    updated_at: new Date(Date.now() - 3 * 60 * 1000).toISOString()
+  }
+]
 
 export function HeroSection({ user }: HeroSectionProps) {
   if (user) {
@@ -107,54 +169,116 @@ export function HeroSection({ user }: HeroSectionProps) {
         </div>
       }
     >
-      <div className="h-full w-full rounded-2xl flex items-center justify-center p-8 bg-background/20 backdrop-blur-sm border border-border/20">
-        <div className="w-full max-w-4xl">
-          {/* Mock Dashboard Preview */}
-          <div className="bg-background/80 backdrop-blur-sm rounded-lg border border-border p-6 shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-foreground">API Monitoring Dashboard</h3>
-              <div className="flex gap-2">
-                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-muted-foreground">Live</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-secondary/50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-emerald-500">99.9%</div>
-                <div className="text-sm text-muted-foreground">Uptime</div>
-              </div>
-              <div className="bg-secondary/50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-blue-500">145ms</div>
-                <div className="text-sm text-muted-foreground">Response Time</div>
-              </div>
-              <div className="bg-secondary/50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-primary">12</div>
-                <div className="text-sm text-muted-foreground">Monitors</div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span className="font-medium">api.example.com</span>
+      <div className="h-full w-full rounded-2xl p-4 bg-background/20 backdrop-blur-sm border border-border/20">
+        <div className="w-full h-full">
+          {/* Custom hero version of MonitorsList - non-interactive */}
+          <div className="pointer-events-none h-full">
+            <div className="backdrop-blur-xl bg-background/60 border-border/50 rounded-lg h-full flex flex-col">
+              <div className="p-6 border-b border-border/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-foreground">Your Monitors ({mockMonitors.length})</h2>
+                    <p className="text-sm text-muted-foreground">
+                      All your configured API monitors and their current status
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-muted-foreground">Live monitoring</span>
+                  </div>
                 </div>
-                <span className="text-sm text-muted-foreground">200ms</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span className="font-medium">payments.service.com</span>
+              <div className="flex-1 overflow-hidden">
+                <div className="overflow-x- h-full">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border/50">
+                        <th className="text-left p-4 font-medium text-foreground">Name</th>
+                        <th className="text-left p-4 font-medium text-foreground">URL</th>
+                        <th className="text-left p-4 font-medium text-foreground">Status</th>
+                        <th className="text-left p-4 font-medium text-foreground">Interval</th>
+                        <th className="text-left p-4 font-medium text-foreground">Response Time</th>
+                        <th className="text-left p-4 font-medium text-foreground">Last Checked</th>
+                        <th className="text-left p-4 font-medium text-foreground">Next Check</th>
+                        <th className="text-left p-4 font-medium text-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mockMonitors.map((monitor) => (
+                        <tr key={monitor.id} className="border-b border-border/20">
+                          <td className="p-4 font-medium">
+                            <div className="flex items-center gap-2">
+                              <span className="text-foreground">{monitor.name}</span>
+                              {!monitor.is_active && (
+                                <span className="text-xs px-2 py-0 text-muted-foreground border border-muted-foreground/20 rounded">
+                                  Disabled
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <span className="truncate max-w-xs text-foreground">{monitor.url}</span>
+                              <svg className="h-3 w-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded border ${monitor.status === 'up' ? 'border-success text-success bg-success/10' :
+                              monitor.status === 'down' ? 'border-destructive text-destructive bg-destructive/20' :
+                                monitor.status === 'timeout' ? 'border-warning text-warning bg-warning/10' :
+                                  monitor.status === 'pending' ? 'border-muted text-muted-foreground bg-muted/10' :
+                                    'border-muted text-muted-foreground bg-muted/10'
+                              }`}>
+                              {monitor.status.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="p-4 text-foreground">
+                            {monitor.interval_minutes < 60 ?
+                              `${monitor.interval_minutes}m` :
+                              `${Math.floor(monitor.interval_minutes / 60)}h${monitor.interval_minutes % 60 ? ` ${monitor.interval_minutes % 60}m` : ''}`
+                            }
+                          </td>
+                          <td className="p-4">
+                            {monitor.response_time ? (
+                              <span className={`font-medium ${monitor.response_time <= 1000 ? 'text-success' :
+                                monitor.response_time <= 2000 ? 'text-warning' :
+                                  'text-destructive'
+                                }`}>
+                                {monitor.response_time}ms
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </td>
+                          <td className="p-4 text-sm text-muted-foreground">
+                            {monitor.last_checked_at ?
+                              (() => {
+                                const diffInMinutes = Math.floor((new Date().getTime() - new Date(monitor.last_checked_at).getTime()) / (1000 * 60));
+                                return diffInMinutes < 1 ? 'Just now' :
+                                  diffInMinutes < 60 ? `${diffInMinutes}m ago` :
+                                    diffInMinutes < 1440 ? `${Math.floor(diffInMinutes / 60)}h ago` :
+                                      new Date(monitor.last_checked_at).toLocaleDateString();
+                              })() : 'Never'
+                            }
+                          </td>
+                          <td className="p-2 text-sm text-muted-foreground">
+                            {monitor.next_check_at ?
+                              (() => {
+                                const diffInMinutes = Math.floor((new Date(monitor.next_check_at).getTime() - new Date().getTime()) / (1000 * 60));
+                                return diffInMinutes < 1 ? 'Just now' :
+                                  diffInMinutes < 60 ? `${diffInMinutes}m ago` :
+                                    diffInMinutes < 1440 ? `${Math.floor(diffInMinutes / 60)}h ago` :
+                                      new Date(monitor.next_check_at).toLocaleDateString();
+                              })() : 'Never'
+                            }
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <span className="text-sm text-muted-foreground">89ms</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                  <span className="font-medium">analytics.domain.com</span>
-                </div>
-                <span className="text-sm text-muted-foreground">1.2s</span>
               </div>
             </div>
           </div>
