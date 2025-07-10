@@ -572,7 +572,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                 <div className="flex items-center gap-2">
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="default"
                     onClick={handleBulkEnable}
                     disabled={isLoading['bulk-enable']}
                     className="hover:bg-success hover:text-success-foreground bg-success/10 border border-success/40 text-success"
@@ -582,7 +582,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   </Button>
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="default"
                     onClick={handleBulkDisable}
                     disabled={isLoading['bulk-disable']}
                     className="hover:bg-warning hover:text-warning-foreground bg-warning/10 border border-warning/40 text-warning"
@@ -592,22 +592,22 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   </Button>
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="default"
                     onClick={openIntervalModal}
                     className="hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary"
                   >
                     <Clock className="h-4 w-4 mr-1" />
                     Change Interval
                   </Button>
-                  <Button size="sm" variant="outline" className="hover:bg-info hover:text-info-foreground bg-info/10 border border-info/40 text-info">
+                  <Button size="sm" variant="default" className="hover:bg-info hover:text-info-foreground bg-info/10 border border-info/40 text-info">
                     <Tag className="h-4 w-4 mr-1" />
                     Add Tags
                   </Button>
                   <Button
                     size="sm"
-                    variant="destructive"
+                    variant="default"
                     onClick={openDeleteModal}
-                    className="hover:bg-destructive hover:text-destructive-foreground bg-destructive/10 border border-destructive/40 text-destructive"
+                    className="border-destructive text-destructive bg-destructive/20"
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
                     Delete
@@ -912,8 +912,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
       {/* Edit Monitor Modal */}
       {editModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md backdrop-blur-xl bg-background/90 border-border/50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md backdrop-blur-xl bg-background/90 border-border/50 shadow-2xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-foreground">Edit Monitor</CardTitle>
@@ -921,6 +921,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   variant="ghost"
                   size="sm"
                   onClick={() => setEditModal({ isOpen: false, monitor: null })}
+                  className="hover:bg-accent/80 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -933,7 +934,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   id="edit-name"
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="border-border/60 bg-background/40 backdrop-blur-sm"
+                  className="border-border/60 bg-background/40 backdrop-blur-sm focus:border-primary/60 focus:bg-background/60"
                 />
               </div>
               <div>
@@ -943,7 +944,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   type="url"
                   value={editForm.url}
                   onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
-                  className="border-border/60 bg-background/40 backdrop-blur-sm"
+                  className="border-border/60 bg-background/40 backdrop-blur-sm focus:border-primary/60 focus:bg-background/60"
                 />
               </div>
               <div>
@@ -952,7 +953,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   value={editForm.interval_minutes.toString()}
                   onValueChange={(value) => setEditForm({ ...editForm, interval_minutes: parseInt(value) })}
                 >
-                  <SelectTrigger className="border-border/60 bg-background/40 backdrop-blur-sm">
+                  <SelectTrigger className="border-border/60 bg-background/40 backdrop-blur-sm focus:border-primary/60 focus:bg-background/60">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="backdrop-blur-xl bg-background/80 border-border/50">
@@ -973,7 +974,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                 <Button
                   onClick={handleEditMonitor}
                   disabled={isLoading['edit']}
-                  className="flex-1 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary"
+                  className="flex-1 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary transition-all duration-200"
                 >
                   {isLoading['edit'] ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   Save Changes
@@ -981,7 +982,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                 <Button
                   variant="outline"
                   onClick={() => setEditModal({ isOpen: false, monitor: null })}
-                  className="flex-1"
+                  className="flex-1 hover:bg-accent/80 border-border/60 backdrop-blur-sm transition-all duration-200"
                 >
                   Cancel
                 </Button>
@@ -993,36 +994,37 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
       {/* Change Interval Modal */}
       {intervalModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md backdrop-blur-xl bg-background/90 border-border/50 shadow-2xl">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Change Check Interval</CardTitle>
+                <CardTitle className="text-foreground">Change Check Interval</CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIntervalModal({ isOpen: false, selectedMonitors: [] })}
+                  className="hover:bg-accent/80 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              <CardDescription>
+              <CardDescription className="text-muted-foreground">
                 Update the check interval for {intervalModal.selectedMonitors.length} selected monitor(s)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="new-interval">New Check Interval</Label>
+                <Label htmlFor="new-interval" className="text-foreground">New Check Interval</Label>
                 <Select
                   value={newInterval.toString()}
                   onValueChange={(value) => setNewInterval(parseInt(value))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-border/60 bg-background/40 backdrop-blur-sm focus:border-primary/60 focus:bg-background/60">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="backdrop-blur-xl bg-background/80 border-border/50">
                     {allowedIntervals.map(interval => (
-                      <SelectItem key={interval} value={interval.toString()}>
+                      <SelectItem key={interval} value={interval.toString()} className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>
                         {formatInterval(interval)}
                       </SelectItem>
                     ))}
@@ -1038,7 +1040,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                 <Button
                   onClick={handleBulkChangeInterval}
                   disabled={isLoading['bulk-interval']}
-                  className="flex-1"
+                  className="flex-1 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary transition-all duration-200"
                 >
                   {isLoading['bulk-interval'] ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   Update Interval
@@ -1046,7 +1048,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                 <Button
                   variant="outline"
                   onClick={() => setIntervalModal({ isOpen: false, selectedMonitors: [] })}
-                  className="flex-1"
+                  className="flex-1 hover:bg-accent/80 border-border/60 backdrop-blur-sm transition-all duration-200"
                 >
                   Cancel
                 </Button>
@@ -1058,8 +1060,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
       {/* Delete Confirmation Modal */}
       {deleteModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md backdrop-blur-xl bg-background/90 border-border/50 shadow-2xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-destructive">Delete Monitors</CardTitle>
@@ -1067,17 +1069,18 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   variant="ghost"
                   size="sm"
                   onClick={() => setDeleteModal({ isOpen: false, selectedMonitors: [], monitorNames: [] })}
+                  className="hover:bg-accent/80 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
-              <CardDescription>
+              <CardDescription className="text-muted-foreground">
                 This action cannot be undone. This will permanently delete the selected monitors.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-destructive/10 rounded-lg">
-                <p className="font-medium mb-2">Monitors to be deleted:</p>
+              <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20 backdrop-blur-sm">
+                <p className="font-medium mb-2 text-foreground">Monitors to be deleted:</p>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   {deleteModal.monitorNames.map((name, index) => (
                     <li key={index}>• {name}</li>
@@ -1089,7 +1092,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   variant="destructive"
                   onClick={handleBulkDelete}
                   disabled={isLoading['bulk-delete']}
-                  className="flex-1"
+                  className="flex-1 hover:bg-destructive hover:text-destructive-foreground transition-all duration-200"
                 >
                   {isLoading['bulk-delete'] ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   Delete Monitors
@@ -1097,7 +1100,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                 <Button
                   variant="outline"
                   onClick={() => setDeleteModal({ isOpen: false, selectedMonitors: [], monitorNames: [] })}
-                  className="flex-1"
+                  className="flex-1 hover:bg-accent/80 border-border/60 backdrop-blur-sm transition-all duration-200"
                 >
                   Cancel
                 </Button>
