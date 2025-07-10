@@ -74,10 +74,10 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
 
   if (monitors.length === 0) {
     return (
-      <Card>
+      <Card className="backdrop-blur-xl bg-background/60 border-border/50">
         <CardHeader>
-          <CardTitle>Your Monitors</CardTitle>
-          <CardDescription>No monitors configured yet</CardDescription>
+          <CardTitle className="text-foreground">Your Monitors</CardTitle>
+          <CardDescription className="text-muted-foreground">No monitors configured yet</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12">
@@ -107,21 +107,21 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
   }
 
   return (
-    <Card>
+    <Card className="backdrop-blur-xl bg-background/60 border-border/50">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Your Monitors ({monitors.length})</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-foreground">Your Monitors ({monitors.length})</CardTitle>
+            <CardDescription className="text-muted-foreground">
               All your configured API monitors and their current status
             </CardDescription>
           </div>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="flex items-center gap-2"
+            className="hover:bg-primary/20  bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -171,8 +171,14 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={getStatusVariant(monitor.status)}
-                      className={monitor.status === 'timeout' ? 'border-warning text-warning bg-warning/10' : ''}
+                      // variant={getStatusVariant(monitor.status)}
+                      className={
+                        monitor.status === 'up' ? 'border-success text-success bg-success/10' :
+                          monitor.status === 'down' ? 'border-destructive text-destructive bg-destructive/20' :
+                            monitor.status === 'timeout' ? 'border-warning text-warning bg-warning/10' :
+                              monitor.status === 'pending' ? 'border-muted text-muted-foreground bg-muted/10' :
+                                'border-muted text-muted-foreground bg-muted/10' // unknown status
+                      }
                     >
                       {monitor.status.toUpperCase()}
                     </Badge>
@@ -194,7 +200,7 @@ export default function MonitorsList({ monitors }: MonitorsListProps) {
                     {formatDate(monitor.next_check_at)}
                   </TableCell>
                   <TableCell>
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="default" size="sm" asChild className='hover:bg-primary/20  bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm'>
                       <Link href={`/monitors/${monitor.id}`}>
                         <BarChart3 className="h-4 w-4 mr-2" />
                         Analytics

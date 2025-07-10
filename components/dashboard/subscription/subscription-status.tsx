@@ -24,7 +24,7 @@ export function SubscriptionStatus() {
 
   if (loading) {
     return (
-      <Card className="p-6">
+      <Card className="p-6 backdrop-blur-xl bg-background/60 border-border/50">
         <div className="space-y-4">
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-4 w-full" />
@@ -36,8 +36,8 @@ export function SubscriptionStatus() {
 
   if (error) {
     return (
-      <Card className="p-6">
-        <div className="text-red-500">
+      <Card className="p-6 backdrop-blur-xl bg-background/60 border-border/50">
+        <div className="text-destructive">
           Error loading subscription: {error}
         </div>
       </Card>
@@ -50,11 +50,11 @@ export function SubscriptionStatus() {
   const plan = subscription?.plan || 'free'
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 backdrop-blur-xl bg-background/60 border-border/50">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Crown className={`h-5 w-5 ${isProPlan ? 'text-yellow-500' : 'text-gray-400'}`} />
-          <h3 className="text-lg font-semibold">Current Plan</h3>
+          <Crown className={`h-5 w-5 ${isProPlan ? 'text-warning' : 'text-muted-foreground'}`} />
+          <h3 className="text-lg font-semibold text-foreground">Current Plan</h3>
           <Badge variant={isProPlan ? 'default' : 'secondary'}>
             {plan.toUpperCase()}
           </Badge>
@@ -94,21 +94,21 @@ export function SubscriptionStatus() {
             {/* Monitors Usage */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Monitor className="h-4 w-4 text-blue-500" />
-                <span className="text-sm font-medium">Monitors</span>
+                <Monitor className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Monitors</span>
               </div>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-foreground">
                 {currentUsage.monitorCount}
                 {planLimits?.max_monitors === -1 ? (
-                  <span className="text-sm text-gray-500 font-normal"> / Unlimited</span>
+                  <span className="text-sm text-muted-foreground font-normal"> / Unlimited</span>
                 ) : (
-                  <span className="text-sm text-gray-500 font-normal"> / {planLimits?.max_monitors}</span>
+                  <span className="text-sm text-muted-foreground font-normal"> / {planLimits?.max_monitors}</span>
                 )}
               </div>
               {planLimits?.max_monitors !== -1 && (
                 <div className="w-full bg-accent rounded-full h-2 ">
                   <div
-                    className="bg-blue-500 h-2 rounded-full"
+                    className="bg-primary h-2 rounded-full"
                     style={{
                       width: `${Math.min((currentUsage.monitorCount / (planLimits?.max_monitors || 1)) * 100, 100)}%`
                     }}
@@ -120,21 +120,21 @@ export function SubscriptionStatus() {
             {/* Notification Channels Usage */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4 text-green-500" />
-                <span className="text-sm font-medium">Channels</span>
+                <Bell className="h-4 w-4 text-success" />
+                <span className="text-sm font-medium text-foreground">Channels</span>
               </div>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-foreground">
                 {currentUsage.notificationChannelsCount}
                 {planLimits?.max_notification_channels === -1 ? (
-                  <span className="text-sm text-gray-500 font-normal"> / Unlimited</span>
+                  <span className="text-sm text-muted-foreground font-normal"> / Unlimited</span>
                 ) : (
-                  <span className="text-sm text-gray-500 font-normal"> / {planLimits?.max_notification_channels}</span>
+                  <span className="text-sm text-muted-foreground font-normal"> / {planLimits?.max_notification_channels}</span>
                 )}
               </div>
               {planLimits?.max_notification_channels !== -1 && (
                 <div className="w-full bg-accent rounded-full h-2">
                   <div
-                    className="bg-green-500 h-2 rounded-full"
+                    className="bg-success h-2 rounded-full"
                     style={{
                       width: `${Math.min((currentUsage.notificationChannelsCount / (planLimits?.max_notification_channels || 1)) * 100, 100)}%`
                     }}
@@ -146,10 +146,10 @@ export function SubscriptionStatus() {
             {/* Check Intervals */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-purple-500" />
-                <span className="text-sm font-medium">Intervals</span>
+                <Clock className="h-4 w-4 text-info" />
+                <span className="text-sm font-medium text-foreground">Intervals</span>
               </div>
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 {getAllowedIntervals().map(interval => (
                   <Badge key={interval} variant="outline" className="mr-1 mb-1">
                     {interval}m
@@ -161,10 +161,10 @@ export function SubscriptionStatus() {
             {/* Analytics Timeframes */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-orange-500" />
-                <span className="text-sm font-medium">Analytics</span>
+                <BarChart3 className="h-4 w-4 text-warning" />
+                <span className="text-sm font-medium text-foreground">Analytics</span>
               </div>
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 {getAllowedTimeframes().map(timeframe => (
                   <Badge key={timeframe} variant="outline" className="mr-1 mb-1">
                     {timeframe}
@@ -176,27 +176,27 @@ export function SubscriptionStatus() {
 
           {/* Plan Features */}
           <div className="space-y-3">
-            <h4 className="font-medium text-sm text-gray-700">Current Plan Features</h4>
+            <h4 className="font-medium text-sm text-foreground">Current Plan Features</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-success" />
                 ) : (
-                  <X className="w-4 h-4 text-red-500" />
+                  <X className="w-4 h-4 text-destructive" />
                 )}
-                <span>Unlimited monitors</span>
+                <span className="text-foreground">Unlimited monitors</span>
               </div>
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-success" />
                 ) : (
-                  <X className="w-4 h-4 text-red-500" />
+                  <X className="w-4 h-4 text-destructive" />
                 )}
-                <span>All check intervals</span>
+                <span className="text-foreground">All check intervals</span>
               </div>
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-success" />
                 ) : (
                   <X className="w-4 h-4 text-red-500" />
                 )}

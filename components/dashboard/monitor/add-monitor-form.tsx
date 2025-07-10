@@ -74,10 +74,10 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full backdrop-blur-xl bg-background/60 border-border/50">
       <CardHeader>
-        <CardTitle>Add New Monitor</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-foreground">Add New Monitor</CardTitle>
+        <CardDescription className="text-muted-foreground">
           Add a new API endpoint to monitor for uptime and performance
         </CardDescription>
       </CardHeader>
@@ -135,12 +135,12 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
           )}
 
           {success && (
-            <Alert className="border-success/20 bg-success/10 text-success">
-              <AlertDescription>{success}</AlertDescription>
+            <Alert className="border-success/30 bg-success/10">
+              <AlertDescription className="text-success-foreground">{success}</AlertDescription>
             </Alert>
           )}
 
-          <Button type="submit" className="w-full mt-[11px]" disabled={isLoading}>
+          <Button type="submit" className="w-full mt-[21px] hover:bg-primary/20  bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm" disabled={isLoading}>
             {isLoading ? 'Creating...' : 'Add Monitor'}
           </Button>
         </form>

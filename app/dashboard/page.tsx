@@ -62,66 +62,86 @@ export default async function DashboardPage() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card>
+        <Card className="group hover:scale-[1.02] transition-all duration-300 backdrop-blur-xl bg-background/60 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Monitors</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Monitors</CardTitle>
+            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors duration-300">
+              <Activity className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalMonitors}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+              {totalMonitors}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
               Active API endpoints
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="group hover:scale-[1.02] transition-all duration-300 backdrop-blur-xl bg-background/60 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Uptime</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Uptime</CardTitle>
+            <div className="p-2 rounded-lg bg-success/10 group-hover:bg-success/20 transition-colors duration-300">
+              <CheckCircle className="h-4 w-4 text-success" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{uptimePercentage}%</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold bg-gradient-to-r from-success to-success/80 bg-clip-text text-transparent">
+              {uptimePercentage}%
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
               {upMonitors} of {totalMonitors} monitors up
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="group hover:scale-[1.02] transition-all duration-300 backdrop-blur-xl bg-background/60 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Issues</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Issues</CardTitle>
+            <div className="p-2 rounded-lg bg-destructive/10 group-hover:bg-destructive/20 transition-colors duration-300">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{downMonitors}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold bg-gradient-to-r from-destructive to-destructive/80 bg-clip-text text-transparent">
+              {downMonitors}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
               Monitors currently down
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="group hover:scale-[1.02] transition-all duration-300 backdrop-blur-xl bg-background/60 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Timeouts</CardTitle>
-            <Timer className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Timeouts</CardTitle>
+            <div className="p-2 rounded-lg bg-warning/10 group-hover:bg-warning/20 transition-colors duration-300">
+              <Timer className="h-4 w-4 text-warning" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">{timeoutMonitors}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold bg-gradient-to-r from-warning to-warning/80 bg-clip-text text-transparent">
+              {timeoutMonitors}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
               Monitors timing out
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="group hover:scale-[1.02] transition-all duration-300 backdrop-blur-xl bg-background/60 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Response</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Avg Response</CardTitle>
+            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors duration-300">
+              <TrendingUp className="h-4 w-4 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgResponseTime}ms</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+              {avgResponseTime}ms
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
               Average response time
             </p>
           </CardContent>
@@ -130,7 +150,7 @@ export default async function DashboardPage() {
 
       {/* Status Alerts */}
       {downMonitors > 0 && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="backdrop-blur-xl bg-destructive/10 border-destructive/30">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             {downMonitors} monitor{downMonitors > 1 ? 's are' : ' is'} currently down.
@@ -140,7 +160,7 @@ export default async function DashboardPage() {
       )}
 
       {timeoutMonitors > 0 && (
-        <Alert variant="default" className="border-warning/20 bg-warning/10">
+        <Alert variant="default" className="backdrop-blur-xl bg-warning/10 border-warning/30">
           <Timer className="h-4 w-4 text-warning" />
           <AlertDescription className="text-warning-foreground">
             {timeoutMonitors} monitor{timeoutMonitors > 1 ? 's are' : ' is'} experiencing timeouts.
@@ -150,7 +170,7 @@ export default async function DashboardPage() {
       )}
 
       {pendingMonitors > 0 && (
-        <Alert>
+        <Alert className="backdrop-blur-xl bg-background/60 border-border/50">
           <Clock className="h-4 w-4" />
           <AlertDescription>
             {pendingMonitors} monitor{pendingMonitors > 1 ? 's are' : ' is'} pending first check.
@@ -160,7 +180,7 @@ export default async function DashboardPage() {
       )}
 
       {totalMonitors === 0 && (
-        <Alert>
+        <Alert className="backdrop-blur-xl bg-background/60 border-border/50">
           <Activity className="h-4 w-4" />
           <AlertDescription>
             Welcome to API Pulse! Add your first monitor below to start tracking your API&apos;s uptime and performance.

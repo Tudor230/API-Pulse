@@ -12,18 +12,18 @@ interface ResponseTimeAnalyticsProps {
   upMonitorsWithResponseTime: Monitor[]
 }
 
-export default function ResponseTimeAnalytics({ 
-  monitors, 
-  avgResponseTime, 
-  upMonitorsWithResponseTime 
+export default function ResponseTimeAnalytics({
+  monitors,
+  avgResponseTime,
+  upMonitorsWithResponseTime
 }: ResponseTimeAnalyticsProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
-    <Card>
+    <Card className="backdrop-blur-xl bg-background/60 border-border/50">
       <CardHeader>
-        <CardTitle>Response Time Analytics</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-foreground">Response Time Analytics</CardTitle>
+        <CardDescription className="text-muted-foreground">
           Average response time: {avgResponseTime}ms across {upMonitorsWithResponseTime.length} healthy monitors
         </CardDescription>
       </CardHeader>
@@ -38,21 +38,20 @@ export default function ResponseTimeAnalytics({
                   <div className="absolute inset-0 bg-gradient-to-r from-success via-success to-warning" style={{ clipPath: 'polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%)' }}></div>
                   <div className="absolute inset-0 bg-gradient-to-r from-warning to-destructive" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%)' }}></div>
                 </div>
-                <div className="absolute inset-1 bg-background rounded-t-full"></div>
-                
+                <div className="absolute inset-1 bg-background/60 backdrop-blur-xl rounded-t-full"></div>
+
                 {/* Gauge needle */}
-                <div 
+                <div
                   className="absolute w-1 h-20 bg-foreground origin-bottom transform transition-transform duration-1000"
-                  style={{ 
-                    left: '50%', 
+                  style={{
+                    left: '50%',
                     bottom: '2px',
-                    transform: `translateX(-50%) rotate(${
-                      avgResponseTime <= 1000 
-                        ? (avgResponseTime / 1000) * 90 - 90  // Green zone: -90 to 0 degrees
-                        : avgResponseTime <= 2000 
-                          ? ((avgResponseTime - 1000) / 1000) * 45 // Yellow zone: 0 to 45 degrees
-                          : Math.min(45 + ((avgResponseTime - 2000) / 1000) * 45, 90) // Red zone: 45 to 90 degrees
-                    }deg)`
+                    transform: `translateX(-50%) rotate(${avgResponseTime <= 1000
+                      ? (avgResponseTime / 1000) * 90 - 90  // Green zone: -90 to 0 degrees
+                      : avgResponseTime <= 2000
+                        ? ((avgResponseTime - 1000) / 1000) * 45 // Yellow zone: 0 to 45 degrees
+                        : Math.min(45 + ((avgResponseTime - 2000) / 1000) * 45, 90) // Red zone: 45 to 90 degrees
+                      }deg)`
                   }}
                 ></div>
               </div>
@@ -62,12 +61,12 @@ export default function ResponseTimeAnalytics({
 
             {/* Expand/Collapse Toggle */}
             <div className="flex items-center justify-between">
-              <h4 className="font-medium text-sm text-muted-foreground">Individual Monitor Performance</h4>
+              {isExpanded && <h4 className="font-medium text-sm text-muted-foreground">Individual Monitor Performance</h4>}
               <Button
-                variant="ghost"
+                variant="default"
                 size="sm"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 hover:bg-primary/20  bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm ml-auto"
               >
                 {isExpanded ? (
                   <>
@@ -93,36 +92,34 @@ export default function ResponseTimeAnalytics({
                     const maxResponseTime = Math.max(...upMonitorsWithResponseTime.map(m => m.response_time || 0), 1000)
                     const widthPercentage = ((monitor.response_time || 0) / maxResponseTime) * 100
                     const isAboveAverage = (monitor.response_time || 0) > avgResponseTime
-                    
+
                     return (
                       <div key={monitor.id} className="space-y-2">
                         <div className="flex justify-between items-center text-sm">
                           <span className="font-medium truncate max-w-[200px]">{monitor.name}</span>
                           <div className="flex items-center gap-2">
-                            <span className={`font-medium ${
-                              (monitor.response_time || 0) <= 1000 ? 'text-green-600' :
-                              (monitor.response_time || 0) > 1000 && (monitor.response_time || 0) <= 2000 ? 'text-yellow-600' : 'text-red-600'
-                            }`}>
+                            <span className={`font-medium ${(monitor.response_time || 0) <= 1000 ? 'text-success' :
+                              (monitor.response_time || 0) > 1000 && (monitor.response_time || 0) <= 2000 ? 'text-warning' : 'text-destructive'
+                              }`}>
                               {monitor.response_time}ms
                             </span>
                             {isAboveAverage && (
-                              <span className="text-xs text-warning bg-warning/10 px-1 rounded">
+                              <span className="text-xs text-warning-foreground bg-warning/20 px-2 py-1 rounded border border-warning/30 backdrop-blur-sm">
                                 +{((monitor.response_time || 0) - avgResponseTime)}ms
                               </span>
                             )}
                           </div>
                         </div>
-                        <div className="relative w-full bg-muted rounded-full h-2">
+                        <div className="relative w-full bg-muted/60 backdrop-blur-sm rounded-full h-2 border border-border/20">
                           {/* Average line indicator */}
-                          <div 
-                            className="absolute top-0 w-0.5 h-2 bg-blue-500 z-10"
+                          <div
+                            className="absolute top-0 w-0.5 h-2 bg-primary shadow-sm z-10"
                             style={{ left: `${(avgResponseTime / maxResponseTime) * 100}%` }}
                           />
-                          <div 
-                            className={`h-2 rounded-full transition-all duration-500 ${
-                              (monitor.response_time || 0) <= 1000 ? 'bg-green-500' :
-                              (monitor.response_time || 0) > 1000 && (monitor.response_time || 0) <= 2000 ? 'bg-yellow-500' : 'bg-red-500'
-                            }`}
+                          <div
+                            className={`h-2 rounded-full transition-all duration-500 shadow-sm ${(monitor.response_time || 0) <= 1000 ? 'bg-success' :
+                              (monitor.response_time || 0) > 1000 && (monitor.response_time || 0) <= 2000 ? 'bg-warning' : 'bg-destructive'
+                              }`}
                             style={{ width: `${Math.max(widthPercentage, 2)}%` }}
                           />
                         </div>
@@ -133,28 +130,28 @@ export default function ResponseTimeAnalytics({
             )}
 
             {/* Chart Legend */}
-            <div className="flex items-center justify-center gap-6 pt-4 border-t text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full" />
+            <div className="flex items-center justify-center gap-6 pt-4 border-t border-border/30 text-xs">
+              <div className="flex items-center gap-2 px-2 py-1 rounded bg-success/10 border border-success/20">
+                <div className="w-3 h-3 bg-success rounded-full shadow-sm" />
                 <span className="text-muted-foreground">Excellent (&lt;1s)</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+              <div className="flex items-center gap-2 px-2 py-1 rounded bg-warning/10 border border-warning/20">
+                <div className="w-3 h-3 bg-warning rounded-full shadow-sm" />
                 <span className="text-muted-foreground">Good (1-2s)</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full" />
+              <div className="flex items-center gap-2 px-2 py-1 rounded bg-destructive/10 border border-destructive/20">
+                <div className="w-3 h-3 bg-destructive rounded-full shadow-sm" />
                 <span className="text-muted-foreground">Needs Attention (&gt;2s)</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-0.5 h-3 bg-blue-500" />
+              <div className="flex items-center gap-2 px-2 py-1 rounded bg-primary/10 border border-primary/20">
+                <div className="w-0.5 h-3 bg-primary shadow-sm" />
                 <span className="text-muted-foreground">Average ({avgResponseTime}ms)</span>
               </div>
             </div>
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+            <div className="mx-auto w-16 h-16 bg-muted/60 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 border border-border/20">
               <TrendingUp className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-medium text-foreground mb-2">No Response Data</h3>
