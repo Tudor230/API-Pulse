@@ -486,7 +486,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
     <div className="space-y-6">
       {/* Notification */}
       {notification && (
-        <Alert variant={notification.type === 'error' ? 'destructive' : 'default'}>
+        <Alert variant={notification.type === 'error' ? 'destructive' : 'default'} className="backdrop-blur-xl bg-background/60 border-border/50">
           {notification.type === 'success' ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
           <AlertDescription>{notification.message}</AlertDescription>
         </Alert>
@@ -501,11 +501,11 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="default" className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm">
             <Upload className="h-4 w-4" />
             Import
           </Button>
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="default" className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm">
             <Download className="h-4 w-4" />
             Export
           </Button>
@@ -514,27 +514,27 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
       {/* Quick Stats - Simplified */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="backdrop-blur-xl bg-background/60 border-border/50">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-2xl font-bold text-foreground">{stats.total}</div>
             <p className="text-sm text-muted-foreground">Total Monitors</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="backdrop-blur-xl bg-background/60 border-border/50">
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-success">{stats.up}</div>
             <p className="text-sm text-muted-foreground">Active & Running</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="backdrop-blur-xl bg-background/60 border-border/50">
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-destructive">{stats.down + stats.timeout}</div>
             <p className="text-sm text-muted-foreground">Need Attention</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="backdrop-blur-xl bg-background/60 border-border/50">
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{uniqueIntervals.length}</div>
+            <div className="text-2xl font-bold text-foreground">{uniqueIntervals.length}</div>
             <p className="text-sm text-muted-foreground">Check Intervals</p>
           </CardContent>
         </Card>
@@ -542,7 +542,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4 border-border/60 bg-background/40 backdrop-blur-sm">
           <TabsTrigger value="manage" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Manage
@@ -565,7 +565,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
         <TabsContent value="manage" className="space-y-6">
           {/* Bulk Actions Bar */}
           {showBulkActions && (
-            <Alert className='flex items-center'>
+            <Alert className='flex items-center backdrop-blur-xl bg-background/60 border-border/50'>
               <CheckSquare className="h-4 w-4" />
               <AlertDescription className="flex items-center justify-between w-full">
                 <span>{selectedMonitors.size} monitor(s) selected</span>
@@ -575,6 +575,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     variant="outline"
                     onClick={handleBulkEnable}
                     disabled={isLoading['bulk-enable']}
+                    className="hover:bg-success hover:text-success-foreground bg-success/10 border border-success/40 text-success"
                   >
                     {isLoading['bulk-enable'] ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Play className="h-4 w-4 mr-1" />}
                     Enable
@@ -584,6 +585,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     variant="outline"
                     onClick={handleBulkDisable}
                     disabled={isLoading['bulk-disable']}
+                    className="hover:bg-warning hover:text-warning-foreground bg-warning/10 border border-warning/40 text-warning"
                   >
                     {isLoading['bulk-disable'] ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Pause className="h-4 w-4 mr-1" />}
                     Disable
@@ -592,11 +594,12 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     size="sm"
                     variant="outline"
                     onClick={openIntervalModal}
+                    className="hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary"
                   >
                     <Clock className="h-4 w-4 mr-1" />
                     Change Interval
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" className="hover:bg-info hover:text-info-foreground bg-info/10 border border-info/40 text-info">
                     <Tag className="h-4 w-4 mr-1" />
                     Add Tags
                   </Button>
@@ -604,6 +607,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     size="sm"
                     variant="destructive"
                     onClick={openDeleteModal}
+                    className="hover:bg-destructive hover:text-destructive-foreground bg-destructive/10 border border-destructive/40 text-destructive"
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
                     Delete
@@ -614,10 +618,10 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
           )}
 
           {/* Filters and Search */}
-          <Card>
+          <Card className="backdrop-blur-xl bg-background/60 border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">Monitor Configuration</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg text-foreground">Monitor Configuration</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Manage your monitor settings, intervals, and configurations
               </CardDescription>
             </CardHeader>
@@ -635,26 +639,26 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
                 <div className="flex gap-2">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[130px]">
+                    <SelectTrigger className="w-[130px] border-border/60 bg-background/40 backdrop-blur-sm">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="up">Online</SelectItem>
-                      <SelectItem value="down">Offline</SelectItem>
-                      <SelectItem value="timeout">Timeout</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
+                    <SelectContent className="backdrop-blur-xl bg-background/80 border-border/50">
+                      <SelectItem value="all" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>All Status</SelectItem>
+                      <SelectItem value="up" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Online</SelectItem>
+                      <SelectItem value="down" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Offline</SelectItem>
+                      <SelectItem value="timeout" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Timeout</SelectItem>
+                      <SelectItem value="pending" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Pending</SelectItem>
                     </SelectContent>
                   </Select>
 
                   <Select value={intervalFilter} onValueChange={setIntervalFilter}>
-                    <SelectTrigger className="w-[130px]">
+                    <SelectTrigger className="w-[130px] border-border/60 bg-background/40 backdrop-blur-sm">
                       <SelectValue placeholder="Interval" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Intervals</SelectItem>
+                    <SelectContent className="backdrop-blur-xl bg-background/80 border-border/50">
+                      <SelectItem value="all" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>All Intervals</SelectItem>
                       {uniqueIntervals.map(interval => (
-                        <SelectItem key={interval} value={interval.toString()}>
+                        <SelectItem key={interval} value={interval.toString()} className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>
                           {formatInterval(interval)}
                         </SelectItem>
                       ))}
@@ -666,16 +670,16 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     setSortBy(field)
                     setSortOrder(order as 'asc' | 'desc')
                   }}>
-                    <SelectTrigger className="w-[140px]">
+                    <SelectTrigger className="w-[140px] border-border/60 bg-background/40 backdrop-blur-sm">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name-asc">Name A-Z</SelectItem>
-                      <SelectItem value="name-desc">Name Z-A</SelectItem>
-                      <SelectItem value="url-asc">URL A-Z</SelectItem>
-                      <SelectItem value="created_at-desc">Newest First</SelectItem>
-                      <SelectItem value="created_at-asc">Oldest First</SelectItem>
-                      <SelectItem value="interval-asc">Interval Low-High</SelectItem>
+                    <SelectContent className="backdrop-blur-xl bg-background/80 border-border/50">
+                      <SelectItem value="name-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Name A-Z</SelectItem>
+                      <SelectItem value="name-desc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Name Z-A</SelectItem>
+                      <SelectItem value="url-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>URL A-Z</SelectItem>
+                      <SelectItem value="created_at-desc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Newest First</SelectItem>
+                      <SelectItem value="created_at-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Oldest First</SelectItem>
+                      <SelectItem value="interval-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Interval Low-High</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -753,8 +757,14 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                           </TableCell>
                           <TableCell>
                             <Badge
-                              variant={getStatusVariant(monitor.status)}
-                              className={monitor.status === 'timeout' ? 'border-warning text-warning bg-warning/10' : ''}
+                              // variant={getStatusVariant(monitor.status)}
+                              className={
+                                monitor.status === 'up' ? 'border-success text-success bg-success/10' :
+                                  monitor.status === 'down' ? 'border-destructive text-destructive bg-destructive/20' :
+                                    monitor.status === 'timeout' ? 'border-warning text-warning bg-warning/10' :
+                                      monitor.status === 'pending' ? 'border-muted text-muted-foreground bg-muted/10' :
+                                        'border-muted text-muted-foreground bg-muted/10' // unknown status
+                              }
                             >
                               {monitor.status.toUpperCase()}
                             </Badge>
@@ -818,10 +828,10 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
         {/* Create Tab */}
         <TabsContent value="create" className="space-y-6">
-          <Card>
+          <Card className="backdrop-blur-xl bg-background/60 border-border/50">
             <CardHeader>
-              <CardTitle>Create New Monitor</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-foreground">Create New Monitor</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Set up a new API endpoint monitor with custom configuration
               </CardDescription>
             </CardHeader>
@@ -831,24 +841,24 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
           </Card>
 
           {/* Quick Create Templates */}
-          <Card>
+          <Card className="backdrop-blur-xl bg-background/60 border-border/50">
             <CardHeader>
-              <CardTitle>Quick Templates</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-foreground">Quick Templates</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Common monitoring configurations for different services
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button variant="outline" className="h-20 flex-col gap-2">
+                <Button variant="outline" className="h-20 flex-col gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary">
                   <Globe className="h-6 w-6" />
                   <span>REST API</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex-col gap-2">
+                <Button variant="outline" className="h-20 flex-col gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary">
                   <Code className="h-6 w-6" />
                   <span>GraphQL</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex-col gap-2">
+                <Button variant="outline" className="h-20 flex-col gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary">
                   <Shield className="h-6 w-6" />
                   <span>Health Check</span>
                 </Button>
@@ -859,17 +869,17 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
         {/* Templates Tab */}
         <TabsContent value="templates">
-          <Card>
+          <Card className="backdrop-blur-xl bg-background/60 border-border/50">
             <CardHeader>
-              <CardTitle>Monitor Templates</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-foreground">Monitor Templates</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Save and reuse monitor configurations
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-12">
                 <FileText className="mx-auto w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Templates Coming Soon</h3>
+                <h3 className="text-lg font-medium mb-2 text-foreground">Templates Coming Soon</h3>
                 <p className="text-muted-foreground">
                   Save monitor configurations as templates for quick reuse.
                 </p>
@@ -880,17 +890,17 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
         {/* Organize Tab */}
         <TabsContent value="organize">
-          <Card>
+          <Card className="backdrop-blur-xl bg-background/60 border-border/50">
             <CardHeader>
-              <CardTitle>Organization & Tags</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-foreground">Organization & Tags</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Group and categorize your monitors
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-12">
                 <Tag className="mx-auto w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Organization Coming Soon</h3>
+                <h3 className="text-lg font-medium mb-2 text-foreground">Organization Coming Soon</h3>
                 <p className="text-muted-foreground">
                   Group monitors with tags and folders for better organization.
                 </p>
@@ -903,10 +913,10 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
       {/* Edit Monitor Modal */}
       {editModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md backdrop-blur-xl bg-background/90 border-border/50">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Edit Monitor</CardTitle>
+                <CardTitle className="text-foreground">Edit Monitor</CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -918,34 +928,36 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="edit-name">Name</Label>
+                <Label htmlFor="edit-name" className="text-foreground">Name</Label>
                 <Input
                   id="edit-name"
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="border-border/60 bg-background/40 backdrop-blur-sm"
                 />
               </div>
               <div>
-                <Label htmlFor="edit-url">URL</Label>
+                <Label htmlFor="edit-url" className="text-foreground">URL</Label>
                 <Input
                   id="edit-url"
                   type="url"
                   value={editForm.url}
                   onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
+                  className="border-border/60 bg-background/40 backdrop-blur-sm"
                 />
               </div>
               <div>
-                <Label htmlFor="edit-interval">Check Interval (minutes)</Label>
+                <Label htmlFor="edit-interval" className="text-foreground">Check Interval (minutes)</Label>
                 <Select
                   value={editForm.interval_minutes.toString()}
                   onValueChange={(value) => setEditForm({ ...editForm, interval_minutes: parseInt(value) })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-border/60 bg-background/40 backdrop-blur-sm">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="backdrop-blur-xl bg-background/80 border-border/50">
                     {allowedIntervals.map(interval => (
-                      <SelectItem key={interval} value={interval.toString()}>
+                      <SelectItem key={interval} value={interval.toString()} className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>
                         {formatInterval(interval)}
                       </SelectItem>
                     ))}
@@ -961,7 +973,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                 <Button
                   onClick={handleEditMonitor}
                   disabled={isLoading['edit']}
-                  className="flex-1"
+                  className="flex-1 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary"
                 >
                   {isLoading['edit'] ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   Save Changes
