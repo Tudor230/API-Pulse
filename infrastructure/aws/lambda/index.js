@@ -414,7 +414,7 @@ async function checkAndTriggerAlerts(monitor, checkResult, history) {
     // Process each alert rule
     for (const rule of alertRules) {
       try {
-        const shouldAlert = shouldTriggerAlert(
+        const shouldAlert = await shouldTriggerAlert(
           rule,
           monitor.status,
           checkResult.status,
@@ -485,9 +485,62 @@ function calculateConsecutiveFailures(history, currentStatus) {
 }
 
 /**
+ * Check if there was a previous down/timeout alert sent for this rule
+ */
+async function checkPreviousDownAlert(rule, previousStatus) {
+  try {
+    const supabase = await getSupabaseClient();
+    
+    // Look for the most recent down/timeout alert for this rule
+    const { data: recentAlerts, error } = await supabase
+      .from("alert_logs")
+      .select("trigger_status, sent_at")
+      .eq("monitor_alert_rule_id", rule.id)
+      .eq("status", "sent")
+      .in("trigger_status", ["down", "timeout"])
+      .order("sent_at", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error(`Error checking previous down alert: ${error.message}`);
+      return true; // Allow recovery alert if we can't check
+    }
+
+    // If we have a recent down/timeout alert, check if there's been a recovery alert since then
+    if (recentAlerts && recentAlerts.length > 0) {
+      const lastDownAlert = recentAlerts[0];
+      
+      // Check if there's been a recovery alert since the last down alert
+      const { data: recoveryAlerts, error: recoveryError } = await supabase
+        .from("alert_logs")
+        .select("sent_at")
+        .eq("monitor_alert_rule_id", rule.id)
+        .eq("status", "sent")
+        .eq("trigger_status", "up")
+        .gt("sent_at", lastDownAlert.sent_at)
+        .limit(1);
+
+      if (recoveryError) {
+        console.error(`Error checking recovery alerts: ${recoveryError.message}`);
+        return true; // Allow recovery alert if we can't check
+      }
+
+      // If no recovery alert has been sent since the last down alert, we should send one
+      return !recoveryAlerts || recoveryAlerts.length === 0;
+    }
+
+    // No previous down alert found
+    return false;
+  } catch (error) {
+    console.error(`Error checking previous down alert: ${error.message}`);
+    return true; // Allow recovery alert if we can't check
+  }
+}
+
+/**
  * Determine if an alert should be triggered based on comprehensive rules
  */
-function shouldTriggerAlert(
+async function shouldTriggerAlert(
   rule,
   oldStatus,
   newStatus,
@@ -500,8 +553,15 @@ function shouldTriggerAlert(
     (oldStatus === "down" || oldStatus === "timeout") &&
     newStatus === "up"
   ) {
-    console.log(`Recovery alert triggered: ${oldStatus} → ${newStatus}`);
-    return true;
+    // Only send recovery alert if we previously sent a down/timeout alert
+    const hadPreviousDownAlert = await checkPreviousDownAlert(rule, oldStatus);
+    if (hadPreviousDownAlert) {
+      console.log(`Recovery alert triggered: ${oldStatus} → ${newStatus} (previous down alert found)`);
+      return true;
+    } else {
+      console.log(`Recovery alert skipped: ${oldStatus} → ${newStatus} (no previous down alert sent)`);
+      return false;
+    }
   }
 
   // Down alerts (up → down)
