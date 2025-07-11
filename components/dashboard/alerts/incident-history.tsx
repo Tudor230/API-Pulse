@@ -15,15 +15,15 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
   // Group history into incidents (consecutive failures/timeouts)
   const getIncidents = () => {
     if (history.length === 0) return []
-    
+
     const incidents = []
     let currentIncident = null
-    
+
     // Sort by checked_at ascending (oldest first)
-    const sortedHistory = [...history].sort((a, b) => 
+    const sortedHistory = [...history].sort((a, b) =>
       new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime()
     )
-    
+
     for (const record of sortedHistory) {
       if (record.status === 'down' || record.status === 'timeout') {
         if (!currentIncident) {
@@ -49,13 +49,13 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
         currentIncident = null
       }
     }
-    
+
     // If there's an ongoing incident
     if (currentIncident) {
       currentIncident.duration = Date.now() - new Date(currentIncident.startTime).getTime()
       incidents.push(currentIncident)
     }
-    
+
     return incidents
   }
 
@@ -65,7 +65,7 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
     const minutes = Math.floor(durationMs / (1000 * 60))
     const hours = Math.floor(minutes / 60)
     const days = Math.floor(hours / 24)
-    
+
     if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`
     if (hours > 0) return `${hours}h ${minutes % 60}m`
     return `${minutes}m`
@@ -86,7 +86,7 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
 
   const getStatusBadge = (status: string, isOngoing: boolean = false) => {
     const baseClass = isOngoing ? "animate-pulse" : ""
-    
+
     switch (status) {
       case 'down':
         return <Badge variant="destructive" className={baseClass}>
@@ -143,7 +143,7 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
-              Incident Summary (24h)
+              Incident Summary (7d)
             </CardTitle>
             <CardDescription>
               {incidents.length} incident{incidents.length !== 1 ? 's' : ''} detected for {monitorName}
@@ -193,7 +193,7 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
             Detailed Check History
           </CardTitle>
           <CardDescription>
-            Complete monitoring history for the last 24 hours
+            Complete monitoring history for the last 7 days
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -221,9 +221,9 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
                           {getStatusIcon(record.status)}
                           <span className={
                             record.status === 'up' ? 'text-success' :
-                            record.status === 'down' ? 'text-destructive' :
-                            record.status === 'timeout' ? 'text-warning' :
-                            'text-muted-foreground'
+                              record.status === 'down' ? 'text-destructive' :
+                                record.status === 'timeout' ? 'text-warning' :
+                                  'text-muted-foreground'
                           }>
                             {record.status.toUpperCase()}
                           </span>
@@ -233,8 +233,8 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
                         {record.response_time ? (
                           <span className={
                             record.response_time <= 500 ? 'text-success' :
-                            record.response_time <= 1000 ? 'text-warning' :
-                            'text-destructive'
+                              record.response_time <= 1000 ? 'text-warning' :
+                                'text-destructive'
                           }>
                             {record.response_time}ms
                           </span>
@@ -246,8 +246,8 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
                         {record.status_code ? (
                           <span className={
                             record.status_code >= 200 && record.status_code < 300 ? 'text-success' :
-                            record.status_code >= 300 && record.status_code < 400 ? 'text-info' :
-                            'text-destructive'
+                              record.status_code >= 300 && record.status_code < 400 ? 'text-info' :
+                                'text-destructive'
                           }>
                             {record.status_code}
                           </span>
