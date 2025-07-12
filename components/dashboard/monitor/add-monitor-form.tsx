@@ -92,6 +92,7 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               required
+              className='border-muted-foreground/20'
             />
           </div>
 
@@ -104,6 +105,7 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
               value={formData.url}
               onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
               required
+              className='border-muted-foreground/20'
             />
           </div>
 
@@ -113,10 +115,10 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
               value={formData.interval_minutes.toString()}
               onValueChange={(value) => setFormData(prev => ({ ...prev, interval_minutes: parseInt(value) }))}
             >
-              <SelectTrigger>
+              <SelectTrigger className="border-muted-foreground/20">
                 <SelectValue placeholder="Select interval" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-muted-foreground/20">
                 {allowedIntervals.map(interval => (
                   <SelectItem key={interval} value={interval.toString()}>
                     {interval === 1 ? 'Every minute' :
@@ -145,6 +147,6 @@ export default function AddMonitorForm({ onSuccess }: AddMonitorFormProps) {
           </Button>
         </form>
       </CardContent>
-    </Card>
+    </Card >
   )
 } 

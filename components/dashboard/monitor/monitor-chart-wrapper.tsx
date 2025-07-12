@@ -105,7 +105,7 @@ export default function MonitorChartWrapper({
     // Remove the old initialization useEffect since it's now handled above
 
     if (isLoading) {
-        return <Skeleton className="h-[420px] w-full" />;
+        return <Skeleton className="h-[420px] w-full bg-background/60 backdrop-blur-md shadow-lg" />;
     }
 
     if (chartType === 'response-time') {

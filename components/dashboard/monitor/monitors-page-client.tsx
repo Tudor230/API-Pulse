@@ -543,19 +543,19 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 border-border/60 bg-background/40 backdrop-blur-sm">
-          <TabsTrigger value="manage" className="flex items-center gap-2">
+          <TabsTrigger value="manage" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
             <Settings className="h-4 w-4" />
             Manage
           </TabsTrigger>
-          <TabsTrigger value="create" className="flex items-center gap-2">
+          <TabsTrigger value="create" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
             <Plus className="h-4 w-4" />
             Create
           </TabsTrigger>
-          <TabsTrigger value="templates" className="flex items-center gap-2">
+          <TabsTrigger value="templates" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
             <FileText className="h-4 w-4" />
             Templates
           </TabsTrigger>
-          <TabsTrigger value="organize" className="flex items-center gap-2">
+          <TabsTrigger value="organize" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
             <Tag className="h-4 w-4" />
             Organize
           </TabsTrigger>
@@ -633,16 +633,16 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     placeholder="Search by name or URL..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 border-muted-foreground/20"
                   />
                 </div>
 
                 <div className="flex gap-2">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[130px] border-border/60 bg-background/40 backdrop-blur-sm">
+                    <SelectTrigger className="w-[130px] border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
-                    <SelectContent className="backdrop-blur-xl bg-background/80 border-border/50">
+                    <SelectContent className="backdrop-blur-xl bg-background/80 border-muted-foreground/20">
                       <SelectItem value="all" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>All Status</SelectItem>
                       <SelectItem value="up" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Online</SelectItem>
                       <SelectItem value="down" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Offline</SelectItem>
@@ -652,10 +652,10 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   </Select>
 
                   <Select value={intervalFilter} onValueChange={setIntervalFilter}>
-                    <SelectTrigger className="w-[130px] border-border/60 bg-background/40 backdrop-blur-sm">
+                    <SelectTrigger className="w-[130px] border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
                       <SelectValue placeholder="Interval" />
                     </SelectTrigger>
-                    <SelectContent className="backdrop-blur-xl bg-background/80 border-border/50">
+                    <SelectContent className="backdrop-blur-xl bg-background/80 border-muted-foreground/20">
                       <SelectItem value="all" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>All Intervals</SelectItem>
                       {uniqueIntervals.map(interval => (
                         <SelectItem key={interval} value={interval.toString()} className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>
@@ -670,10 +670,10 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     setSortBy(field)
                     setSortOrder(order as 'asc' | 'desc')
                   }}>
-                    <SelectTrigger className="w-[140px] border-border/60 bg-background/40 backdrop-blur-sm">
+                    <SelectTrigger className="w-[140px] border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="backdrop-blur-xl bg-background/80 border-border/50">
+                    <SelectContent className="backdrop-blur-xl bg-background/80 border-muted-foreground/20">
                       <SelectItem value="name-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Name A-Z</SelectItem>
                       <SelectItem value="name-desc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Name Z-A</SelectItem>
                       <SelectItem value="url-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>URL A-Z</SelectItem>

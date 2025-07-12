@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Mail, 
-  MessageSquare, 
-  Webhook, 
-  CheckCircle, 
-  AlertTriangle, 
+import {
+  Mail,
+  MessageSquare,
+  Webhook,
+  CheckCircle,
+  AlertTriangle,
   Settings,
   Trash2,
   RefreshCw
@@ -124,8 +124,8 @@ export default function NotificationChannelsList({ refreshTrigger }: Notificatio
       }
 
       // Update the channel in the list
-      setChannels(prev => prev.map(channel => 
-        channel.id === channelId 
+      setChannels(prev => prev.map(channel =>
+        channel.id === channelId
           ? { ...channel, is_active: !isActive }
           : channel
       ))
@@ -140,7 +140,7 @@ export default function NotificationChannelsList({ refreshTrigger }: Notificatio
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="bg-background/60 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
         <CardHeader>
           <CardTitle>Notification Channels</CardTitle>
           <CardDescription>Loading your notification channels...</CardDescription>
@@ -155,7 +155,7 @@ export default function NotificationChannelsList({ refreshTrigger }: Notificatio
   }
 
   return (
-    <Card>
+    <Card className="bg-background/60 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -165,10 +165,10 @@ export default function NotificationChannelsList({ refreshTrigger }: Notificatio
             </CardDescription>
           </div>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             onClick={fetchChannels}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm"
           >
             <RefreshCw className="h-4 w-4" />
             Refresh
@@ -207,7 +207,7 @@ export default function NotificationChannelsList({ refreshTrigger }: Notificatio
               <TableBody>
                 {channels.map((channel) => {
                   const Icon = getChannelIcon(channel.type)
-                  
+
                   return (
                     <TableRow key={channel.id}>
                       <TableCell>
@@ -223,19 +223,19 @@ export default function NotificationChannelsList({ refreshTrigger }: Notificatio
                           </div>
                         </div>
                       </TableCell>
-                      
+
                       <TableCell>
                         <Badge variant="outline">
                           {getChannelTypeLabel(channel.type)}
                         </Badge>
                       </TableCell>
-                      
+
                       <TableCell>
                         <div className="font-mono text-sm text-muted-foreground max-w-xs truncate">
                           {getChannelValue(channel)}
                         </div>
                       </TableCell>
-                      
+
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {channel.is_verified ? (
@@ -251,11 +251,11 @@ export default function NotificationChannelsList({ refreshTrigger }: Notificatio
                           )}
                         </div>
                       </TableCell>
-                      
+
                       <TableCell className="text-sm text-muted-foreground">
                         {new Date(channel.created_at).toLocaleDateString()}
                       </TableCell>
-                      
+
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button
@@ -266,7 +266,7 @@ export default function NotificationChannelsList({ refreshTrigger }: Notificatio
                           >
                             {channel.is_active ? 'Disable' : 'Enable'}
                           </Button>
-                          
+
                           <Button
                             variant="outline"
                             size="sm"

@@ -17,16 +17,16 @@ export default function AlertsPageClient() {
 
   return (
     <Tabs defaultValue="channels" className="space-y-8">
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="channels" className="flex items-center gap-2">
+      <TabsList className="grid w-full grid-cols-3 backdrop-blur-xl bg-background/60 border-border/50">
+        <TabsTrigger value="channels" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
           <Settings className="h-4 w-4" />
           Notification Channels
         </TabsTrigger>
-        <TabsTrigger value="rules" className="flex items-center gap-2">
+        <TabsTrigger value="rules" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
           <Bell className="h-4 w-4" />
           Alert Rules
         </TabsTrigger>
-        <TabsTrigger value="history" className="flex items-center gap-2">
+        <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
           <History className="h-4 w-4" />
           Alert History
         </TabsTrigger>
@@ -47,7 +47,7 @@ export default function AlertsPageClient() {
         </div>
 
         {/* Information Card */}
-        <Card>
+        <Card className="bg-background/60 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
@@ -81,7 +81,7 @@ export default function AlertsPageClient() {
 
       {/* Alert Rules Tab */}
       <TabsContent value="rules" className="space-y-8">
-        <Card>
+        <Card className="bg-background/60 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
           <CardHeader>
             <CardTitle>Alert Rules</CardTitle>
             <CardDescription>
@@ -103,7 +103,7 @@ export default function AlertsPageClient() {
 
       {/* Alert History Tab */}
       <TabsContent value="history" className="space-y-8">
-        <Card>
+        <Card className="bg-background/60 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
           <CardHeader>
             <CardTitle>Alert History</CardTitle>
             <CardDescription>

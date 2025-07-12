@@ -185,20 +185,20 @@ export default async function MonitorPage({ params }: MonitorPageProps) {
 
               {/* Main Content Tabs */}
               <Tabs defaultValue="overview" className="mt-8">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="overview" className="flex items-center gap-2">
+                <TabsList className="grid w-full grid-cols-4 bg-background/60 backdrop-blur-md">
+                  <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
                     <Activity className="h-4 w-4" />
                     Overview
                   </TabsTrigger>
-                  <TabsTrigger value="response" className="flex items-center gap-2">
+                  <TabsTrigger value="response" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
                     <Zap className="h-4 w-4" />
                     Response Time
                   </TabsTrigger>
-                  <TabsTrigger value="uptime" className="flex items-center gap-2">
+                  <TabsTrigger value="uptime" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
                     <CheckCircle className="h-4 w-4" />
                     Uptime
                   </TabsTrigger>
-                  <TabsTrigger value="incidents" className="flex items-center gap-2">
+                  <TabsTrigger value="incidents" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
                     <AlertCircle className="h-4 w-4" />
                     Incidents
                   </TabsTrigger>

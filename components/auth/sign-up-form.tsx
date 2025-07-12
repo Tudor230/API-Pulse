@@ -94,7 +94,7 @@ export function SignUpForm() {
   }
 
   return (
-    <Card className="w-full max-w-md bg-muted backdrop-blur-md border-muted-foreground/20 shadow-2xl">
+    <Card className="w-full max-w-md bg-background/20 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">Create your account</CardTitle>
         <CardDescription className="text-center">
@@ -169,7 +169,7 @@ export function SignUpForm() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-muted px-2 text-muted-foreground">Or</span>
+            <span className="bg-transparent px-2 text-muted-foreground">Or</span>
           </div>
         </div>
 

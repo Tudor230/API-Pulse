@@ -209,7 +209,7 @@ export default function ResponseTimeChart({
 
   if (chartData.length === 0 && !detailed) {
     return (
-      <Card>
+      <Card className="bg-background/60 backdrop-blur-md shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -258,7 +258,7 @@ export default function ResponseTimeChart({
   }
 
   return (
-    <Card>
+    <Card className="bg-background/60 backdrop-blur-md shadow-lg">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -345,7 +345,7 @@ export default function ResponseTimeChart({
                 const maxResponseTime = data.maxResponseTime;
 
                 return (
-                  <div className="rounded-lg border bg-background p-3 shadow-md">
+                  <div className="rounded-lg border bg-background/60 backdrop-blur-xl p-3 shadow-lg">
                     <div className="grid gap-2">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">{label}</span>
@@ -376,7 +376,7 @@ export default function ResponseTimeChart({
                         )}
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-sm">Status:</span>
-                          <span className={`text-sm font-medium ${data.status === 'up' ? 'text-green-600' : 'text-red-600'
+                          <span className={`text-sm font-medium ${data.status === 'up' ? 'text-success' : 'text-destructive'
                             }`}>
                             {data.status === 'up' ? 'Up' : 'Down'}
                           </span>

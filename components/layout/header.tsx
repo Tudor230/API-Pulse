@@ -32,10 +32,10 @@ export function Header({ user }: HeaderProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/5 to-white/10 dark:from-slate-800/40 dark:via-slate-900/20 dark:to-slate-800/40 backdrop-blur-2xl"></div>
 
         {/* Animated gradient border */}
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
 
         {/* Subtle inner glow */}
-        <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center h-16">

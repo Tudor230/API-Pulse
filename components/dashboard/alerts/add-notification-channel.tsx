@@ -123,6 +123,7 @@ export default function AddNotificationChannel({ onSuccess }: AddNotificationCha
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               placeholder="alerts@example.com"
               required
+              className='border-muted-foreground/20'
             />
             <p className="text-sm text-muted-foreground">
               You&apos;ll receive a verification email before alerts can be sent.
@@ -140,6 +141,7 @@ export default function AddNotificationChannel({ onSuccess }: AddNotificationCha
               onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
               placeholder="+1234567890"
               required
+              className='border-muted-foreground/20'
             />
             <p className="text-sm text-muted-foreground">
               Use international format (e.g., +1234567890). You&apos;ll receive a verification SMS.
@@ -157,6 +159,7 @@ export default function AddNotificationChannel({ onSuccess }: AddNotificationCha
               onChange={(e) => setFormData(prev => ({ ...prev, webhook_url: e.target.value }))}
               placeholder="https://your-app.com/api/alerts"
               required
+              className='border-muted-foreground/20'
             />
             <p className="text-sm text-muted-foreground">
               POST requests with JSON payload will be sent to this URL.
@@ -171,7 +174,7 @@ export default function AddNotificationChannel({ onSuccess }: AddNotificationCha
   const selectedChannelType = channelTypes.find(t => t.value === formData.type)
 
   return (
-    <Card>
+    <Card className="w-full bg-background/60 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
       <CardHeader>
         <div className="flex items-center gap-2">
           <Plus className="h-5 w-5" />
@@ -190,14 +193,14 @@ export default function AddNotificationChannel({ onSuccess }: AddNotificationCha
               {channelTypes.map((type) => {
                 const Icon = type.icon
                 const isSelected = formData.type === type.value
-                
+
                 return (
                   <div
                     key={type.value}
                     className={`
-                      border rounded-lg p-4 cursor-pointer transition-all
-                      ${isSelected 
-                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
+                      border rounded-lg p-4 cursor-pointer transition-all border-muted-foreground/20 hover:border-primary/50
+                      ${isSelected
+                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
                         : 'border-border hover:border-primary/50'
                       }
                     `}
@@ -233,6 +236,7 @@ export default function AddNotificationChannel({ onSuccess }: AddNotificationCha
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder={selectedChannelType ? `My ${selectedChannelType.label} Alerts` : 'My Alert Channel'}
               required
+              className="border-muted-foreground/20"
             />
             <p className="text-sm text-muted-foreground">
               A friendly name to identify this notification channel.
@@ -260,9 +264,9 @@ export default function AddNotificationChannel({ onSuccess }: AddNotificationCha
           )}
 
           {/* Submit Button */}
-          <Button 
-            type="submit" 
-            className="w-full" 
+          <Button
+            type="submit"
+            className="w-full"
             disabled={isLoading || !formData.name || !formData.type}
           >
             {isLoading ? 'Creating...' : `Create ${selectedChannelType?.label || ''} Channel`}

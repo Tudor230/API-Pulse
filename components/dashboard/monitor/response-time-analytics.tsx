@@ -20,7 +20,7 @@ export default function ResponseTimeAnalytics({
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
-    <Card className="backdrop-blur-xl bg-background/60 border-border/50">
+    <Card className="backdrop-blur-xl bg-background/60 border-border/50 min-h-104">
       <CardHeader>
         <CardTitle className="text-foreground">Response Time Analytics</CardTitle>
         <CardDescription className="text-muted-foreground">

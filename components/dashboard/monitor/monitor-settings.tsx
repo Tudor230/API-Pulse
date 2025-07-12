@@ -128,7 +128,7 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
   }))
 
   return (
-    <Card>
+    <Card className="bg-background/60 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -142,10 +142,10 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
           </div>
           {!isEditing && (
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 hover:bg-primary/20 bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm"
             >
               <Edit className="h-4 w-4" />
               Edit
@@ -314,11 +314,11 @@ export default function MonitorSettings({ monitor }: MonitorSettingsProps) {
                 </p>
               </div>
               <Button
-                variant="destructive"
+                variant="default"
                 size="sm"
                 onClick={handleDelete}
                 disabled={isLoading}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 hover:bg-destructive/20 bg-destructive/10 border border-destructive/40 backdrop-blur-sm text-destructive transition-all duration-200 shadow-sm"
               >
                 <Trash2 className="h-4 w-4" />
                 {isLoading ? 'Deleting...' : 'Delete Monitor'}

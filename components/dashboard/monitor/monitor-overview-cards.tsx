@@ -66,7 +66,7 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       {/* Current Status */}
-      <Card className="border-l-4 border-l-primary">
+      <Card className="border-l-4 border-l-primary bg-background/60 backdrop-blur-md shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Current Status</CardTitle>
           {monitor.status === 'up' ? (
@@ -80,10 +80,10 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
             <div className="text-2xl font-bold">
               {monitor.status === 'up' ? 'Online' : 'Offline'}
             </div>
-            <Badge 
+            <Badge
               className={
-                monitor.status === 'up' 
-                  ? 'bg-success/10 text-success border-success/20' 
+                monitor.status === 'up'
+                  ? 'bg-success/10 text-success border-success/20'
                   : 'bg-destructive/10 text-destructive border-destructive/20'
               }
             >
@@ -91,7 +91,7 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground">
-            {monitor.last_checked_at 
+            {monitor.last_checked_at
               ? `Last checked ${new Date(monitor.last_checked_at).toLocaleTimeString()}`
               : 'Never checked'
             }
@@ -100,7 +100,7 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
       </Card>
 
       {/* Uptime */}
-      <Card>
+      <Card className="bg-background/60 backdrop-blur-md shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">24h Uptime</CardTitle>
           <Activity className="h-4 w-4 text-muted-foreground" />
@@ -118,7 +118,7 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
       </Card>
 
       {/* Average Response Time */}
-      <Card>
+      <Card className="bg-background/60 backdrop-blur-md shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
           <Clock className="h-4 w-4 text-muted-foreground" />
@@ -152,7 +152,7 @@ export default function MonitorOverviewCards({ monitor, stats, responseTrend }: 
       </Card>
 
       {/* Incidents */}
-      <Card>
+      <Card className="bg-background/60 backdrop-blur-md shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">24h Incidents</CardTitle>
           <Zap className="h-4 w-4 text-muted-foreground" />

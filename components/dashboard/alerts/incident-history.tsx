@@ -110,7 +110,7 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
 
   if (history.length === 0) {
     return (
-      <Card>
+      <Card className="p-6 backdrop-blur-xl bg-background/60 border-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5" />
@@ -139,7 +139,7 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
     <div className="space-y-6">
       {/* Incidents Summary */}
       {incidents.length > 0 && (
-        <Card>
+        <Card className="bg-background/60 backdrop-blur-md shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
@@ -152,7 +152,7 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
           <CardContent>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {incidents.map((incident, index) => (
-                <div key={incident.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={incident.id} className="flex items-center justify-between p-4 border border-muted-foreground/20 rounded-lg">
                   <div className="flex items-center gap-3">
                     {getStatusIcon(incident.status)}
                     <div>
@@ -186,7 +186,7 @@ export default function IncidentHistory({ history, monitorName }: IncidentHistor
       )}
 
       {/* Detailed History Table */}
-      <Card>
+      <Card className="bg-background/60 backdrop-blur-md shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Info className="h-5 w-5" />
