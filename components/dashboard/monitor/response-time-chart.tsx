@@ -434,7 +434,7 @@ export default function ResponseTimeChart({
           <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t">
             <div className="text-center">
               <div className="text-sm text-muted-foreground">Minimum</div>
-              <div className="text-lg font-semibold text-success">{stats.min}ms</div>
+              <div className="text-lg font-semibold text-success">{stats.min.toFixed(0)}ms</div>
             </div>
             <div className="text-center">
               <div className="text-sm text-muted-foreground">Average</div>
@@ -442,7 +442,7 @@ export default function ResponseTimeChart({
             </div>
             <div className="text-center">
               <div className="text-sm text-muted-foreground">Maximum</div>
-              <div className="text-lg font-semibold text-destructive">{stats.max}ms</div>
+              <div className="text-lg font-semibold text-destructive">{stats.max.toFixed(0)}ms</div>
             </div>
           </div>
         )}

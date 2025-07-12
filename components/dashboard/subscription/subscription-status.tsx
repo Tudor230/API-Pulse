@@ -68,10 +68,10 @@ export function SubscriptionStatus() {
             </Button>
           )}
           <Button
-            variant="ghost"
+            variant="default"
             size="sm"
             onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 hover:bg-primary/20  bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm"
           >
             {showDetails ? (
               <>
@@ -198,23 +198,23 @@ export function SubscriptionStatus() {
                 {isProPlan ? (
                   <Check className="w-4 h-4 text-success" />
                 ) : (
-                  <X className="w-4 h-4 text-red-500" />
+                  <X className="w-4 h-4 text-destructive" />
                 )}
                 <span>SMS & Webhook alerts</span>
               </div>
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-success" />
                 ) : (
-                  <X className="w-4 h-4 text-red-500" />
+                  <X className="w-4 h-4 text-destructive" />
                 )}
                 <span>Extended analytics</span>
               </div>
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-success" />
                 ) : (
-                  <X className="w-4 h-4 text-red-500" />
+                  <X className="w-4 h-4 text-destructive" />
                 )}
                 <span>Priority support</span>
               </div>
