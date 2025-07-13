@@ -338,6 +338,58 @@ CREATE TRIGGER subscription_status_change_trigger
     FOR EACH ROW
     EXECUTE FUNCTION handle_subscription_status_change();
 
+-- Function to deactivate monitors over the plan limit when a user's plan changes
+CREATE OR REPLACE FUNCTION deactivate_monitors_over_limit()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    max_monitors_for_new_plan INTEGER;
+    user_active_monitors_count INTEGER;
+    monitors_to_deactivate_count INTEGER;
+BEGIN
+    -- Check if the plan has actually changed
+    IF NEW.plan <> OLD.plan THEN
+        -- Get the max_monitors limit for the new plan
+        SELECT max_monitors INTO max_monitors_for_new_plan
+        FROM public.plan_limits
+        WHERE plan = NEW.plan;
+
+        -- Get the count of the user's active monitors
+        SELECT COUNT(*) INTO user_active_monitors_count
+        FROM public.monitors
+        WHERE user_id = NEW.user_id AND is_active = true;
+
+        -- If the new plan has a monitor limit and the user exceeds it
+        IF max_monitors_for_new_plan IS NOT NULL AND user_active_monitors_count > max_monitors_for_new_plan THEN
+            monitors_to_deactivate_count := user_active_monitors_count - max_monitors_for_new_plan;
+
+            -- Deactivate the newest monitors that are over the limit
+            WITH monitors_to_deactivate AS (
+                SELECT id
+                FROM public.monitors
+                WHERE user_id = NEW.user_id AND is_active = true
+                ORDER BY created_at DESC
+                LIMIT monitors_to_deactivate_count
+            )
+            UPDATE public.monitors
+            SET is_active = false
+            WHERE id IN (SELECT id FROM monitors_to_deactivate);
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+-- Trigger to execute the function after a user's subscription plan changes
+CREATE TRIGGER handle_plan_change
+    AFTER UPDATE ON public.user_subscriptions
+    FOR EACH ROW
+    WHEN (OLD.plan IS DISTINCT FROM NEW.plan)
+    EXECUTE FUNCTION deactivate_monitors_over_limit();
+
 -- Grant necessary permissions
 GRANT ALL ON public.user_subscriptions TO authenticated;
 GRANT ALL ON public.subscription_usage TO authenticated;
