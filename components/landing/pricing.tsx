@@ -347,7 +347,7 @@ export function Pricing({
           <div className="p-6 rounded-lg max-w-md w-full mx-4 backdrop-blur-xl bg-background/90 border border-border/50 shadow-2xl">
             <h3 className="text-lg font-semibold mb-4 text-foreground">Cancel Subscription</h3>
             <p className="text-muted-foreground mb-6">
-              Are you sure you want to cancel your subscription? You'll continue to have access to Pro features until the end of your current billing period, then your account will be downgraded to the Free plan.
+              Are you sure you want to cancel your subscription? You&apos;ll continue to have access to Pro features until the end of your current billing period, then your account will be downgraded to the Free plan.
             </p>
             <div className="flex gap-3">
               <button
