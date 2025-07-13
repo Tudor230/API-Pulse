@@ -214,15 +214,15 @@ export function SubscriptionStatus() {
             <h4 className="font-medium text-sm text-foreground">Current Plan Features</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <div className="flex items-center gap-2">
-                {isProPlan ? (
+                {planLimits?.max_monitors === -1 ? (
                   <Check className="w-4 h-4 text-success flex-shrink-0" />
                 ) : (
                   <X className="w-4 h-4 text-destructive flex-shrink-0" />
                 )}
-                <span className="text-foreground">Unlimited monitors</span>
+                <span className="text-foreground"> Unlimited monitors</span>
               </div>
               <div className="flex items-center gap-2">
-                {isProPlan ? (
+                {getAllowedIntervals().includes(1) ? (
                   <Check className="w-4 h-4 text-success flex-shrink-0" />
                 ) : (
                   <X className="w-4 h-4 text-destructive flex-shrink-0" />
@@ -230,20 +230,28 @@ export function SubscriptionStatus() {
                 <span className="text-foreground">All check intervals</span>
               </div>
               <div className="flex items-center gap-2">
-                {isProPlan ? (
+                {getAllowedNotificationTypes().includes('sms') || getAllowedNotificationTypes().includes('webhook') ? (
                   <Check className="w-4 h-4 text-success flex-shrink-0" />
                 ) : (
                   <X className="w-4 h-4 text-destructive flex-shrink-0" />
                 )}
-                <span className="text-foreground">SMS & Webhook alerts</span>
+                <span className="text-foreground"> SMS & Webhook alerts</span>
               </div>
               <div className="flex items-center gap-2">
-                {isProPlan ? (
+                {planLimits?.max_notification_channels === -1 ? (
                   <Check className="w-4 h-4 text-success flex-shrink-0" />
                 ) : (
                   <X className="w-4 h-4 text-destructive flex-shrink-0" />
                 )}
-                <span className="text-foreground">Extended analytics</span>
+                <span className="text-foreground">Unlimited notification channels</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {getAllowedTimeframes().includes('30d') ? (
+                  <Check className="w-4 h-4 text-success flex-shrink-0" />
+                ) : (
+                  <X className="w-4 h-4 text-destructive flex-shrink-0" />
+                )}
+                <span className="text-foreground">Analytics up to 30d</span>
               </div>
               <div className="flex items-center gap-2">
                 {isProPlan ? (
