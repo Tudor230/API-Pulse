@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { AlertLog, Monitor, NotificationChannel, AlertStatus, AlertType } from '@/lib/supabase-types'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,7 +59,7 @@ export default function AlertHistoryList({ refreshTrigger }: AlertHistoryListPro
     // Responsive breakpoint
     const isMobile = useMediaQuery('(max-width: 640px)')
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setIsLoading(true)
             setError(null)
@@ -107,11 +107,11 @@ export default function AlertHistoryList({ refreshTrigger }: AlertHistoryListPro
         } finally {
             setIsLoading(false)
         }
-    }
+    }, [currentPage, selectedMonitor, selectedStatus, selectedType, pageSize, monitors.length])
 
     useEffect(() => {
         fetchData()
-    }, [refreshTrigger, currentPage, selectedMonitor, selectedStatus, selectedType])
+    }, [fetchData, refreshTrigger])
 
     // Filter logs by search term
     const filteredLogs = searchTerm
