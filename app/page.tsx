@@ -18,6 +18,8 @@ const demoPlans = [
     period: "per month",
     features: [
       "Up to 3 monitors",
+      "One notification channel",
+      "Only email alerts",
       "Basic analytics",
       "48-hour support response time",
       "Community support",
@@ -35,10 +37,10 @@ const demoPlans = [
     period: "per month",
     features: [
       "Up to 10 monitors",
+      "Up to 5 notification channels",
       "Advanced analytics",
-      "24-hour support response time",
+      "Email, SMS & Webhook alerts",
       "Priority support",
-      "Team collaboration",
       "Custom integrations",
     ],
     description: "Ideal for growing teams and businesses",
@@ -56,8 +58,8 @@ const demoPlans = [
     period: "per month",
     features: [
       "Unlimited monitors",
+      "Unlimited notification channels",
       "Custom solutions",
-      "Dedicated account manager",
       "1-hour support response time",
       "Advanced security",
       "Custom contracts",
