@@ -130,22 +130,22 @@ export default function ResponseTimeAnalytics({
             )}
 
             {/* Chart Legend */}
-            <div className="flex items-center justify-center gap-6 pt-4 border-t border-border/30 text-xs">
-              <div className="flex items-center gap-2 px-2 py-1 rounded bg-success/10 border border-success/20">
-                <div className="w-3 h-3 bg-success rounded-full shadow-sm" />
-                <span className="text-muted-foreground">Excellent (&lt;1s)</span>
+            <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-2 sm:gap-6 pt-4 border-t border-border/30 text-xs">
+              <div className="flex items-center gap-1 sm:gap-2 px-2 py-1 rounded bg-success/10 border border-success/20">
+                <div className="w-3 h-3 bg-success rounded-full shadow-sm flex-shrink-0" />
+                <span className="text-muted-foreground text-xs sm:text-sm">Excellent (&lt;1s)</span>
               </div>
-              <div className="flex items-center gap-2 px-2 py-1 rounded bg-warning/10 border border-warning/20">
-                <div className="w-3 h-3 bg-warning rounded-full shadow-sm" />
-                <span className="text-muted-foreground">Good (1-2s)</span>
+              <div className="flex items-center gap-1 sm:gap-2 px-2 py-1 rounded bg-warning/10 border border-warning/20">
+                <div className="w-3 h-3 bg-warning rounded-full shadow-sm flex-shrink-0" />
+                <span className="text-muted-foreground text-xs sm:text-sm">Good (1-2s)</span>
               </div>
-              <div className="flex items-center gap-2 px-2 py-1 rounded bg-destructive/10 border border-destructive/20">
-                <div className="w-3 h-3 bg-destructive rounded-full shadow-sm" />
-                <span className="text-muted-foreground">Needs Attention (&gt;2s)</span>
+              <div className="flex items-center gap-1 sm:gap-2 px-2 py-1 rounded bg-destructive/10 border border-destructive/20">
+                <div className="w-3 h-3 bg-destructive rounded-full shadow-sm flex-shrink-0" />
+                <span className="text-muted-foreground text-xs sm:text-sm">Poor (&gt;2s)</span>
               </div>
-              <div className="flex items-center gap-2 px-2 py-1 rounded bg-primary/10 border border-primary/20">
-                <div className="w-0.5 h-3 bg-primary shadow-sm" />
-                <span className="text-muted-foreground">Average ({avgResponseTime}ms)</span>
+              <div className="flex items-center gap-1 sm:gap-2 px-2 py-1 rounded bg-primary/10 border border-primary/20">
+                <div className="w-0.5 h-3 bg-primary shadow-sm flex-shrink-0" />
+                <span className="text-muted-foreground text-xs sm:text-sm">Average ({avgResponseTime}ms)</span>
               </div>
             </div>
           </div>

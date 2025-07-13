@@ -24,7 +24,7 @@ export function SubscriptionStatus() {
 
   if (loading) {
     return (
-      <Card className="p-6 backdrop-blur-xl bg-background/60 border-border/50">
+      <Card className="p-4 sm:p-6 backdrop-blur-xl bg-background/60 border-border/50">
         <div className="space-y-4">
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-4 w-full" />
@@ -36,7 +36,7 @@ export function SubscriptionStatus() {
 
   if (error) {
     return (
-      <Card className="p-6 backdrop-blur-xl bg-background/60 border-border/50">
+      <Card className="p-4 sm:p-6 backdrop-blur-xl bg-background/60 border-border/50">
         <div className="text-destructive">
           Error loading subscription: {error}
         </div>
@@ -50,16 +50,36 @@ export function SubscriptionStatus() {
   const plan = subscription?.plan || 'free'
 
   return (
-    <Card className="p-6 backdrop-blur-xl bg-background/60 border-border/50">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Crown className={`h-5 w-5 ${isProPlan ? 'text-warning' : 'text-muted-foreground'}`} />
-          <h3 className="text-lg font-semibold text-foreground">Current Plan</h3>
-          <Badge variant={isProPlan ? 'default' : 'secondary'}>
-            {plan.toUpperCase()}
-          </Badge>
+    <Card className="p-4 sm:p-6 backdrop-blur-xl bg-background/60 border-border/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center justify-between sm:justify-start gap-2">
+          <div className="flex items-center gap-2">
+            <Crown className={`h-5 w-5 ${isProPlan ? 'text-warning' : 'text-muted-foreground'}`} />
+            <h3 className="text-lg font-semibold text-foreground">Current Plan</h3>
+            <Badge variant={isProPlan ? 'default' : 'secondary'}>
+              {plan.toUpperCase()}
+            </Badge>
+          </div>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setShowDetails(!showDetails)}
+            className="flex items-center gap-1 hover:bg-primary/20 bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm sm:hidden"
+          >
+            {showDetails ? (
+              <>
+                <span>Hide</span>
+                <ChevronUp className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                <span>Details</span>
+                <ChevronDown className="h-4 w-4" />
+              </>
+            )}
+          </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2">
           {isFreePlan && (
             <Button size="sm" asChild>
               <Link href="/#pricing">
@@ -71,7 +91,7 @@ export function SubscriptionStatus() {
             variant="default"
             size="sm"
             onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-1 hover:bg-primary/20  bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm"
+            className="flex items-center gap-1 hover:bg-primary/20 bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm"
           >
             {showDetails ? (
               <>
@@ -88,9 +108,20 @@ export function SubscriptionStatus() {
         </div>
       </div>
 
+      {/* Mobile upgrade button */}
+      {isFreePlan && (
+        <div className="mt-4 sm:hidden">
+          <Button size="sm" asChild className="w-full">
+            <Link href="/#pricing">
+              Upgrade to Pro
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {showDetails && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-6">
             {/* Monitors Usage */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -150,11 +181,13 @@ export function SubscriptionStatus() {
                 <span className="text-sm font-medium text-foreground">Intervals</span>
               </div>
               <div className="text-xs text-muted-foreground">
-                {getAllowedIntervals().map(interval => (
-                  <Badge key={interval} variant="outline" className="mr-1 mb-1">
-                    {interval}m
-                  </Badge>
-                ))}
+                <div className="flex flex-wrap gap-1">
+                  {getAllowedIntervals().map(interval => (
+                    <Badge key={interval} variant="outline" className="text-xs">
+                      {interval}m
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -165,11 +198,13 @@ export function SubscriptionStatus() {
                 <span className="text-sm font-medium text-foreground">Analytics</span>
               </div>
               <div className="text-xs text-muted-foreground">
-                {getAllowedTimeframes().map(timeframe => (
-                  <Badge key={timeframe} variant="outline" className="mr-1 mb-1">
-                    {timeframe}
-                  </Badge>
-                ))}
+                <div className="flex flex-wrap gap-1">
+                  {getAllowedTimeframes().map(timeframe => (
+                    <Badge key={timeframe} variant="outline" className="text-xs">
+                      {timeframe}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -177,60 +212,60 @@ export function SubscriptionStatus() {
           {/* Plan Features */}
           <div className="space-y-3">
             <h4 className="font-medium text-sm text-foreground">Current Plan Features</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-success" />
+                  <Check className="w-4 h-4 text-success flex-shrink-0" />
                 ) : (
-                  <X className="w-4 h-4 text-destructive" />
+                  <X className="w-4 h-4 text-destructive flex-shrink-0" />
                 )}
                 <span className="text-foreground">Unlimited monitors</span>
               </div>
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-success" />
+                  <Check className="w-4 h-4 text-success flex-shrink-0" />
                 ) : (
-                  <X className="w-4 h-4 text-destructive" />
+                  <X className="w-4 h-4 text-destructive flex-shrink-0" />
                 )}
                 <span className="text-foreground">All check intervals</span>
               </div>
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-success" />
+                  <Check className="w-4 h-4 text-success flex-shrink-0" />
                 ) : (
-                  <X className="w-4 h-4 text-destructive" />
+                  <X className="w-4 h-4 text-destructive flex-shrink-0" />
                 )}
-                <span>SMS & Webhook alerts</span>
+                <span className="text-foreground">SMS & Webhook alerts</span>
               </div>
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-success" />
+                  <Check className="w-4 h-4 text-success flex-shrink-0" />
                 ) : (
-                  <X className="w-4 h-4 text-destructive" />
+                  <X className="w-4 h-4 text-destructive flex-shrink-0" />
                 )}
-                <span>Extended analytics</span>
+                <span className="text-foreground">Extended analytics</span>
               </div>
               <div className="flex items-center gap-2">
                 {isProPlan ? (
-                  <Check className="w-4 h-4 text-success" />
+                  <Check className="w-4 h-4 text-success flex-shrink-0" />
                 ) : (
-                  <X className="w-4 h-4 text-destructive" />
+                  <X className="w-4 h-4 text-destructive flex-shrink-0" />
                 )}
-                <span>Priority support</span>
+                <span className="text-foreground">Priority support</span>
               </div>
             </div>
           </div>
 
           {isFreePlan && (
-            <div className="mt-4 p-4 bg-accent rounded-lg border border-primary/20">
-              <div className="flex items-center justify-between">
+            <div className="mt-4 p-4 bg-accent/20 rounded-lg border border-primary/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h5 className="font-medium text-info">Upgrade to Pro</h5>
                   <p className="text-sm text-card-foreground">
                     Unlock unlimited monitors, all intervals, and advanced notifications
                   </p>
                 </div>
-                <Button size="sm" asChild>
+                <Button size="sm" asChild className="w-full sm:w-auto">
                   <Link href="/#pricing">
                     Upgrade Now
                   </Link>

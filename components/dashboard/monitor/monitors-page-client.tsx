@@ -493,9 +493,9 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Monitor Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Monitor Management</h1>
           <p className="text-muted-foreground mt-1">
             Configure, organize, and manage your API monitoring setup
           </p>
@@ -503,61 +503,61 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
         <div className="flex items-center gap-2">
           <Button variant="default" className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm">
             <Upload className="h-4 w-4" />
-            Import
+            <span className="hidden sm:inline">Import</span>
           </Button>
           <Button variant="default" className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm">
             <Download className="h-4 w-4" />
-            Export
+            <span className="hidden sm:inline">Export</span>
           </Button>
         </div>
       </div>
 
       {/* Quick Stats - Simplified */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="backdrop-blur-xl bg-background/60 border-border/50">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-foreground">{stats.total}</div>
-            <p className="text-sm text-muted-foreground">Total Monitors</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-xl sm:text-2xl font-bold text-foreground">{stats.total}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">Total Monitors</p>
           </CardContent>
         </Card>
         <Card className="backdrop-blur-xl bg-background/60 border-border/50">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-success">{stats.up}</div>
-            <p className="text-sm text-muted-foreground">Active & Running</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-xl sm:text-2xl font-bold text-success">{stats.up}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">Active & Running</p>
           </CardContent>
         </Card>
         <Card className="backdrop-blur-xl bg-background/60 border-border/50">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-destructive">{stats.down + stats.timeout}</div>
-            <p className="text-sm text-muted-foreground">Need Attention</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-xl sm:text-2xl font-bold text-destructive">{stats.down + stats.timeout}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">Need Attention</p>
           </CardContent>
         </Card>
         <Card className="backdrop-blur-xl bg-background/60 border-border/50">
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-foreground">{uniqueIntervals.length}</div>
-            <p className="text-sm text-muted-foreground">Check Intervals</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-xl sm:text-2xl font-bold text-foreground">{uniqueIntervals.length}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">Check Intervals</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 border-border/60 bg-background/40 backdrop-blur-sm">
-          <TabsTrigger value="manage" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
-            <Settings className="h-4 w-4" />
-            Manage
+        <TabsList className="grid w-full grid-cols-4 border-border/60 bg-background/60 backdrop-blur-sm">
+          <TabsTrigger value="manage" className="flex items-center gap-1 sm:gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40 text-xs sm:text-sm px-1 sm:px-3">
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Manage</span>
           </TabsTrigger>
-          <TabsTrigger value="create" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
-            <Plus className="h-4 w-4" />
-            Create
+          <TabsTrigger value="create" className="flex items-center gap-1 sm:gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40 text-xs sm:text-sm px-1 sm:px-3">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Create</span>
           </TabsTrigger>
-          <TabsTrigger value="templates" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
-            <FileText className="h-4 w-4" />
-            Templates
+          <TabsTrigger value="templates" className="flex items-center gap-1 sm:gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40 text-xs sm:text-sm px-1 sm:px-3">
+            <FileText className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Templates</span>
           </TabsTrigger>
-          <TabsTrigger value="organize" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
-            <Tag className="h-4 w-4" />
-            Organize
+          <TabsTrigger value="organize" className="flex items-center gap-1 sm:gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40 text-xs sm:text-sm px-1 sm:px-3">
+            <Tag className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+            <span className="hidden sm:inline">Organize</span>
           </TabsTrigger>
         </TabsList>
 
@@ -566,40 +566,41 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
           {/* Bulk Actions Bar */}
           {showBulkActions && (
             <Alert className='flex items-center backdrop-blur-xl bg-background/60 border-border/50'>
-              <CheckSquare className="h-4 w-4" />
-              <AlertDescription className="flex items-center justify-between w-full">
-                <span>{selectedMonitors.size} monitor(s) selected</span>
-                <div className="flex items-center gap-2">
+              <CheckSquare className="h-4 w-4 flex-shrink-0" />
+              <AlertDescription className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2 sm:gap-4">
+                <span className="text-sm">{selectedMonitors.size} monitor(s) selected</span>
+                <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                   <Button
                     size="sm"
                     variant="default"
                     onClick={handleBulkEnable}
                     disabled={isLoading['bulk-enable']}
-                    className="hover:bg-success hover:text-success-foreground bg-success/10 border border-success/40 text-success"
+                    className="hover:bg-success hover:text-success-foreground bg-success/10 border border-success/40 text-success text-xs sm:text-sm"
                   >
-                    {isLoading['bulk-enable'] ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Play className="h-4 w-4 mr-1" />}
-                    Enable
+                    {isLoading['bulk-enable'] ? <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" /> : <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />}
+                    <span className="hidden sm:inline">Enable</span>
                   </Button>
                   <Button
                     size="sm"
                     variant="default"
                     onClick={handleBulkDisable}
                     disabled={isLoading['bulk-disable']}
-                    className="hover:bg-warning hover:text-warning-foreground bg-warning/10 border border-warning/40 text-warning"
+                    className="hover:bg-warning hover:text-warning-foreground bg-warning/10 border border-warning/40 text-warning text-xs sm:text-sm"
                   >
-                    {isLoading['bulk-disable'] ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Pause className="h-4 w-4 mr-1" />}
-                    Disable
+                    {isLoading['bulk-disable'] ? <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" /> : <Pause className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />}
+                    <span className="hidden sm:inline">Disable</span>
                   </Button>
                   <Button
                     size="sm"
                     variant="default"
                     onClick={openIntervalModal}
-                    className="hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary"
+                    className="hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm"
                   >
-                    <Clock className="h-4 w-4 mr-1" />
-                    Change Interval
+                    <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden sm:inline">Change Interval</span>
+                    <span className="sm:hidden">Interval</span>
                   </Button>
-                  <Button size="sm" variant="default" className="hover:bg-info hover:text-info-foreground bg-info/10 border border-info/40 text-info">
+                  <Button size="sm" variant="default" className="hover:bg-info hover:text-info-foreground bg-info/10 border border-info/40 text-info text-xs sm:text-sm hidden sm:inline-flex">
                     <Tag className="h-4 w-4 mr-1" />
                     Add Tags
                   </Button>
@@ -607,10 +608,10 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     size="sm"
                     variant="default"
                     onClick={openDeleteModal}
-                    className="border-destructive text-destructive bg-destructive/20"
+                    className="border-destructive text-destructive bg-destructive/20 text-xs sm:text-sm"
                   >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden sm:inline">Delete</span>
                   </Button>
                 </div>
               </AlertDescription>
@@ -619,15 +620,15 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
           {/* Filters and Search */}
           <Card className="backdrop-blur-xl bg-background/60 border-border/50">
-            <CardHeader>
+            <CardHeader className="pb-4">
               <CardTitle className="text-lg text-foreground">Monitor Configuration</CardTitle>
               <CardDescription className="text-muted-foreground">
                 Manage your monitor settings, intervals, and configurations
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                <div className="relative flex-1">
+              <div className="flex flex-col gap-4 mb-6">
+                <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search by name or URL..."
@@ -637,9 +638,9 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   />
                 </div>
 
-                <div className="flex gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[130px] border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
+                    <SelectTrigger className="border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent className="backdrop-blur-xl bg-background/80 border-muted-foreground/20">
@@ -652,7 +653,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   </Select>
 
                   <Select value={intervalFilter} onValueChange={setIntervalFilter}>
-                    <SelectTrigger className="w-[130px] border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
+                    <SelectTrigger className="border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
                       <SelectValue placeholder="Interval" />
                     </SelectTrigger>
                     <SelectContent className="backdrop-blur-xl bg-background/80 border-muted-foreground/20">
@@ -670,7 +671,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     setSortBy(field)
                     setSortOrder(order as 'asc' | 'desc')
                   }}>
-                    <SelectTrigger className="w-[140px] border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
+                    <SelectTrigger className="border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="backdrop-blur-xl bg-background/80 border-muted-foreground/20">
@@ -849,18 +850,18 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button variant="outline" className="h-20 flex-col gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary">
-                  <Globe className="h-6 w-6" />
-                  <span>REST API</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Button variant="outline" className="h-16 sm:h-20 flex-col gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary">
+                  <Globe className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <span className="text-sm sm:text-base">REST API</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex-col gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary">
-                  <Code className="h-6 w-6" />
-                  <span>GraphQL</span>
+                <Button variant="outline" className="h-16 sm:h-20 flex-col gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary">
+                  <Code className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <span className="text-sm sm:text-base">GraphQL</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex-col gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary">
-                  <Shield className="h-6 w-6" />
-                  <span>Health Check</span>
+                <Button variant="outline" className="h-16 sm:h-20 flex-col gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary">
+                  <Shield className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <span className="text-sm sm:text-base">Health Check</span>
                 </Button>
               </div>
             </CardContent>
@@ -913,8 +914,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
       {/* Edit Monitor Modal */}
       {editModal.isOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md backdrop-blur-xl bg-background/90 border-border/50 shadow-2xl">
-            <CardHeader>
+          <Card className="w-full max-w-md mx-4 backdrop-blur-xl bg-background/90 border-border/50 shadow-2xl">
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-foreground">Edit Monitor</CardTitle>
                 <Button
@@ -970,7 +971,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   </p>
                 )}
               </div>
-              <div className="flex gap-2 pt-4">
+              <div className="flex flex-col sm:flex-row gap-2 pt-4">
                 <Button
                   onClick={handleEditMonitor}
                   disabled={isLoading['edit']}
@@ -995,8 +996,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
       {/* Change Interval Modal */}
       {intervalModal.isOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md backdrop-blur-xl bg-background/90 border-border/50 shadow-2xl">
-            <CardHeader>
+          <Card className="w-full max-w-md mx-4 backdrop-blur-xl bg-background/90 border-border/50 shadow-2xl">
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-foreground">Change Check Interval</CardTitle>
                 <Button
@@ -1036,7 +1037,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                   </p>
                 )}
               </div>
-              <div className="flex gap-2 pt-4">
+              <div className="flex flex-col sm:flex-row gap-2 pt-4">
                 <Button
                   onClick={handleBulkChangeInterval}
                   disabled={isLoading['bulk-interval']}
@@ -1061,8 +1062,8 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
       {/* Delete Confirmation Modal */}
       {deleteModal.isOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md backdrop-blur-xl bg-background/90 border-border/50 shadow-2xl">
-            <CardHeader>
+          <Card className="w-full max-w-md mx-4 backdrop-blur-xl bg-background/90 border-border/50 shadow-2xl">
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-destructive">Delete Monitors</CardTitle>
                 <Button
@@ -1079,15 +1080,15 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20 backdrop-blur-sm">
+              <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20 backdrop-blur-sm max-h-40 overflow-y-auto">
                 <p className="font-medium mb-2 text-foreground">Monitors to be deleted:</p>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   {deleteModal.monitorNames.map((name, index) => (
-                    <li key={index}>• {name}</li>
+                    <li key={index} className="truncate">• {name}</li>
                   ))}
                 </ul>
               </div>
-              <div className="flex gap-2 pt-4">
+              <div className="flex flex-col sm:flex-row gap-2 pt-4">
                 <Button
                   variant="destructive"
                   onClick={handleBulkDelete}

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import AddNotificationChannel from '@/components/dashboard/alerts/add-notification-channel'
 import NotificationChannelsList from '@/components/dashboard/alerts/notification-channels-list'
-import { Bell, Settings, History } from 'lucide-react'
+import { Bell, Mail, Clock } from 'lucide-react'
 
 export default function AlertsPageClient() {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
@@ -19,16 +19,16 @@ export default function AlertsPageClient() {
     <Tabs defaultValue="channels" className="space-y-8">
       <TabsList className="grid w-full grid-cols-3 backdrop-blur-xl bg-background/60 border-border/50">
         <TabsTrigger value="channels" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
-          <Settings className="h-4 w-4" />
-          Notification Channels
+          <Mail className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="hidden sm:inline">Notification Channels</span>
         </TabsTrigger>
         <TabsTrigger value="rules" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
-          <Bell className="h-4 w-4" />
-          Alert Rules
+          <Bell className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="hidden sm:inline">Alert Rules</span>
         </TabsTrigger>
         <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:!bg-primary/20 data-[state=active]:!text-primary data-[state=active]:!border-primary/40">
-          <History className="h-4 w-4" />
-          Alert History
+          <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="hidden sm:inline">Alert History</span>
         </TabsTrigger>
       </TabsList>
 
@@ -50,7 +50,7 @@ export default function AlertsPageClient() {
         <Card className="bg-background/60 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
+              <Mail className="h-5 w-5" />
               About Notification Channels
             </CardTitle>
           </CardHeader>
@@ -112,7 +112,7 @@ export default function AlertsPageClient() {
           </CardHeader>
           <CardContent>
             <div className="text-center py-12">
-              <History className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">Alert History</h3>
               <p className="text-muted-foreground mb-4">
                 Alert history tracking will be available soon. All sent alerts are logged

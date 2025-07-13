@@ -259,19 +259,19 @@ export default function NotificationChannelsList({ refreshTrigger }: Notificatio
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button
-                            variant="outline"
+                            variant="default"
                             size="sm"
                             onClick={() => handleToggleActive(channel.id, channel.is_active)}
-                            className="text-xs"
+                            className="text-xs hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm"
                           >
                             {channel.is_active ? 'Disable' : 'Enable'}
                           </Button>
 
                           <Button
-                            variant="outline"
+                            variant="default"
                             size="sm"
                             onClick={() => handleDelete(channel.id)}
-                            className="text-xs text-destructive hover:text-destructive"
+                            className="text-xs text-destructive bg-destructive/20 hover:bg-destructive/30 border border-destructive/40 backdrop-blur-sm transition-all duration-200 shadow-sm"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>

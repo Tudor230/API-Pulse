@@ -42,7 +42,6 @@ export interface MonitorStatistics {
 export interface ResponseTimeTrend {
   checked_at: string
   response_time: number | null
-  status: string
 }
 
 export interface UptimeStats {
@@ -59,6 +58,7 @@ export interface HourlyMonitorData {
   avg_response_time: number
   uptime_percentage: number
   total_checks: number
+  failed_checks?: number
 }
 
 // Alert System Types
@@ -265,11 +265,11 @@ export interface Database {
         Returns: boolean
       }
       update_subscription_usage: {
-        Args: { 
-          p_user_id: string; 
-          p_monitor_count?: number; 
-          p_notification_channels_count?: number; 
-          p_api_calls_increment?: number 
+        Args: {
+          p_user_id: string;
+          p_monitor_count?: number;
+          p_notification_channels_count?: number;
+          p_api_calls_increment?: number
         }
         Returns: void
       }

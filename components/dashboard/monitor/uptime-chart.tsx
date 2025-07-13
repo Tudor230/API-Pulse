@@ -70,6 +70,10 @@ export default function UptimeChart({
         const totalChecks = bucket.reduce((sum, item) => sum + item.total_checks, 0);
         const avgUptime = totalChecks > 0 ? (totalSuccessfulChecks / totalChecks) * 100 : 0;
 
+        // Calculate failed checks more accurately
+        const successfulChecks = Math.round(totalSuccessfulChecks);
+        const failedChecks = totalChecks - successfulChecks;
+
         // Calculate average response time
         const avgResponseTime = bucket.reduce((sum, item) => sum + item.avg_response_time, 0) / bucket.length;
 
@@ -81,6 +85,7 @@ export default function UptimeChart({
           hour_bucket: representativeItem.hour_bucket,
           uptime_percentage: avgUptime,
           total_checks: totalChecks,
+          failed_checks: Math.max(0, failedChecks), // Ensure non-negative
           avg_response_time: avgResponseTime,
           bucket_size: bucket.length
         };
@@ -114,10 +119,15 @@ export default function UptimeChart({
         const avgUptime = totalChecks > 0 ? (totalSuccessfulChecks / totalChecks) * 100 : 0;
         const avgResponseTime = dayData.reduce((sum, item) => sum + item.avg_response_time, 0) / dayData.length;
 
+        // Calculate failed checks more accurately
+        const successfulChecks = Math.round(totalSuccessfulChecks);
+        const failedChecks = totalChecks - successfulChecks;
+
         return {
           hour_bucket: day + 'T12:00:00Z', // Use noon as representative time
           uptime_percentage: avgUptime,
           total_checks: totalChecks,
+          failed_checks: Math.max(0, failedChecks), // Ensure non-negative
           avg_response_time: avgResponseTime,
           bucket_size: dayData.length
         };
@@ -140,12 +150,17 @@ export default function UptimeChart({
         const avgUptime = totalChecks > 0 ? (totalSuccessfulChecks / totalChecks) * 100 : 0;
         const avgResponseTime = dayData.reduce((sum, item) => sum + item.avg_response_time, 0) / dayData.length;
 
+        // Calculate failed checks more accurately
+        const successfulChecks = Math.round(totalSuccessfulChecks);
+        const failedChecks = totalChecks - successfulChecks;
+
         return {
           hour_bucket: day + 'T12:00:00Z',
           uptime_percentage: avgUptime,
           total_checks: totalChecks,
+          failed_checks: Math.max(0, failedChecks), // Ensure non-negative
           avg_response_time: avgResponseTime,
-          bucket_size: dayData.length
+          bucket_size: dayData.length,
         };
       });
     } else {
@@ -156,20 +171,27 @@ export default function UptimeChart({
     return aggregatedData.map(item => {
       const date = new Date(item.hour_bucket);
       let timeFormat: string;
+      let mobileTimeFormat: string;
 
       if (timeFrame === '30d') {
         timeFormat = date.getDate().toString(); // Only day number for 30d
+        mobileTimeFormat = date.getDate().toString();
       } else if (timeFrame === '7d') {
         timeFormat = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        mobileTimeFormat = date.getDate().toString(); // Just day number on mobile
       } else {
-        timeFormat = date.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false });
+        // For hour-based timeframes (1h, 6h, 24h)
+        timeFormat = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        mobileTimeFormat = date.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }); // Shorter format for mobile
       }
 
       return {
         time: timeFormat,
+        mobileTime: mobileTimeFormat,
         fullTime: date.toLocaleString(),
         uptime: item.uptime_percentage,
         checks: item.total_checks,
+        failed_checks: item.failed_checks || Math.max(0, Math.round(item.total_checks * (100 - item.uptime_percentage) / 100)),
         bucketSize: item.bucket_size || 1,
       };
     });
@@ -197,27 +219,21 @@ export default function UptimeChart({
 
   const trend = getTrend()
 
-  const getUptimeColor = (percentage: number) => {
-    if (percentage >= 99.9) return 'text-success'
-    if (percentage >= 95) return 'text-warning'
-    return 'text-destructive'
-  }
-
   if (transformedData.length === 0 && !detailed) {
     return (
       <Card className="bg-background/60 backdrop-blur-md shadow-lg">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
                 {title}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Uptime history and performance
               </CardDescription>
             </div>
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex flex-col items-start sm:items-end gap-1">
               <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
                 <SelectTrigger className="w-40">
                   <SelectValue />
@@ -231,7 +247,7 @@ export default function UptimeChart({
                 </SelectContent>
               </Select>
               {isFreePlan && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Upgrade for longer time ranges
                 </p>
               )}
@@ -243,8 +259,8 @@ export default function UptimeChart({
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <Activity className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium text-foreground mb-2">No Data Available</h3>
-            <p className="text-muted-foreground">
+            <h3 className="text-sm sm:text-lg font-medium text-foreground mb-2">No Data Available</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Uptime data will appear here once monitoring begins
             </p>
           </div>
@@ -256,29 +272,29 @@ export default function UptimeChart({
   return (
     <Card className="bg-background/60 backdrop-blur-md shadow-lg">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <div className="flex-1">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
               {title}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Overall uptime: {safeUptimePercentage.toFixed(2)}%
               {trend && (
                 <>
                   {trend.change === 0 ? (
-                    <span className="ml-2 inline-flex items-center gap-1 text-muted-foreground">
-                      <ArrowRight className="h-3 w-3" />
+                    <span className="ml-2 inline-flex items-center gap-1 text-muted-foreground text-xs sm:text-sm">
+                      <ArrowRight className="h-2 w-2 sm:h-3 sm:w-3" />
                       No trend
                     </span>
                   ) : trend.isImproving ? (
-                    <span className="ml-2 inline-flex items-center gap-1 text-success">
-                      <TrendingUp className="h-3 w-3" />
+                    <span className="ml-2 inline-flex items-center gap-1 text-success text-xs sm:text-sm">
+                      <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" />
                       Trending up by {trend.change.toFixed(1)}%
                     </span>
                   ) : (
-                    <span className="ml-2 inline-flex items-center gap-1 text-destructive">
-                      <TrendingDown className="h-3 w-3" />
+                    <span className="ml-2 inline-flex items-center gap-1 text-destructive text-xs sm:text-sm">
+                      <TrendingDown className="h-2 w-2 sm:h-3 sm:w-3" />
                       Trending down by {trend.change.toFixed(1)}%
                     </span>
                   )}
@@ -286,7 +302,7 @@ export default function UptimeChart({
               )}
             </CardDescription>
           </div>
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-start sm:items-end gap-1">
             <Select value={timeFrame} onValueChange={onTimeFrameChangeAction}>
               <SelectTrigger className="w-40">
                 <SelectValue />
@@ -300,7 +316,7 @@ export default function UptimeChart({
               </SelectContent>
             </Select>
             {isFreePlan && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Upgrade for longer time ranges
               </p>
             )}
@@ -322,8 +338,16 @@ export default function UptimeChart({
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value}
-              interval={transformedData.length > 50 ? Math.floor(transformedData.length / 8) : 0}
+              tickFormatter={(value, index) => {
+                // Use mobile format on smaller screens and fewer ticks
+                if (typeof window !== 'undefined' && window.innerWidth < 640) {
+                  const item = transformedData[index];
+                  return item?.mobileTime || value;
+                }
+                return value;
+              }}
+              interval={transformedData.length > 50 ? Math.floor(transformedData.length / 4) : transformedData.length > 20 ? Math.floor(transformedData.length / 6) : transformedData.length > 10 ? 1 : 0}
+              className="text-xs sm:text-sm"
             />
             <YAxis
               tickLine={false}
@@ -331,6 +355,8 @@ export default function UptimeChart({
               tickMargin={8}
               domain={[0, 100]}
               tickFormatter={(value) => `${value}%`}
+              className="text-xs sm:text-sm"
+              width={35}
             />
             <ChartTooltip
               cursor={false}
@@ -344,27 +370,27 @@ export default function UptimeChart({
                   <div className="rounded-lg border bg-background/60 backdrop-blur-xl p-3 shadow-lg">
                     <div className="grid gap-2">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium">{label}</span>
+                        <span className="text-xs sm:text-sm font-medium">{label}</span>
                         <span className="text-xs text-muted-foreground">{data.fullTime}</span>
                       </div>
                       <div className="grid gap-1">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm">Uptime:</span>
-                          <span className="font-mono text-sm font-medium">
+                          <span className="text-xs sm:text-sm">Uptime:</span>
+                          <span className="font-mono text-xs sm:text-sm font-medium">
                             {data.uptime.toFixed(2)}%
                           </span>
                         </div>
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm">Total Checks:</span>
-                          <span className="font-mono text-sm font-medium">
+                          <span className="text-xs sm:text-sm">Total Checks:</span>
+                          <span className="font-mono text-xs sm:text-sm font-medium">
                             {data.checks}
                           </span>
                         </div>
-                        {bucketSize > 1 && (
+                        {data.failed_checks > 0 && (
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm text-muted-foreground">Time Buckets:</span>
-                            <span className="text-sm text-muted-foreground">
-                              {bucketSize} periods
+                            <span className="text-xs sm:text-sm text-destructive">Failed:</span>
+                            <span className="font-mono text-xs sm:text-sm font-medium text-destructive">
+                              {data.failed_checks} timeout/down
                             </span>
                           </div>
                         )}
@@ -414,20 +440,20 @@ export default function UptimeChart({
         {detailed && transformedData.length > 0 && (
           <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t">
             <div className="text-center">
-              <div className="text-sm text-muted-foreground">Best Hour</div>
-              <div className="text-lg font-semibold text-success">
+              <div className="text-xs sm:text-sm text-muted-foreground">Best Hour</div>
+              <div className="text-sm sm:text-lg font-semibold text-success">
                 {Math.max(...transformedData.map(d => d.uptime)).toFixed(1)}%
               </div>
             </div>
             <div className="text-center">
-              <div className="text-sm text-muted-foreground">Average</div>
-              <div className="text-lg font-semibold text-primary">
+              <div className="text-xs sm:text-sm text-muted-foreground">Average</div>
+              <div className="text-sm sm:text-lg font-semibold text-primary">
                 {safeUptimePercentage.toFixed(1)}%
               </div>
             </div>
             <div className="text-center">
-              <div className="text-sm text-muted-foreground">Worst Hour</div>
-              <div className="text-lg font-semibold text-destructive">
+              <div className="text-xs sm:text-sm text-muted-foreground">Worst Hour</div>
+              <div className="text-sm sm:text-lg font-semibold text-destructive">
                 {Math.min(...transformedData.map(d => d.uptime)).toFixed(1)}%
               </div>
             </div>
