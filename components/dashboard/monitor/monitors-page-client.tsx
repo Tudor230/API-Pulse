@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSubscription } from '@/lib/contexts/SubscriptionContext'
 import { Badge } from '@/components/ui/badge'
@@ -70,6 +70,14 @@ interface DeleteModalState {
   monitorNames: string[]
 }
 
+interface ImportModalState {
+  isOpen: boolean
+}
+
+interface ExportModalState {
+  isOpen: boolean
+}
+
 function getStatusVariant(status: Monitor['status']) {
   switch (status) {
     case 'up':
@@ -121,6 +129,7 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
   const [editModal, setEditModal] = useState<EditModalState>({ isOpen: false, monitor: null })
   const [intervalModal, setIntervalModal] = useState<IntervalModalState>({ isOpen: false, selectedMonitors: [] })
   const [deleteModal, setDeleteModal] = useState<DeleteModalState>({ isOpen: false, selectedMonitors: [], monitorNames: [] })
+  const [importModal, setImportModal] = useState<ImportModalState>({ isOpen: false })
 
   // Form states
   const [editForm, setEditForm] = useState({ name: '', url: '', interval_minutes: 5 })
@@ -129,6 +138,18 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
   // Loading states
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({})
   const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null)
+
+  // Import/Export Operations
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importData, setImportData] = useState<any[]>([])
+  const [importPreview, setImportPreview] = useState<any[]>([])
+  const [importValidation, setImportValidation] = useState<{
+    total: number
+    valid: number
+    duplicates: number
+    errors: string[]
+  }>({ total: 0, valid: 0, duplicates: 0, errors: [] })
 
   // Filter and search monitors
   const filteredMonitors = useMemo(() => {
@@ -205,6 +226,200 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
 
   const setLoadingState = (key: string, loading: boolean) => {
     setIsLoading(prev => ({ ...prev, [key]: loading }))
+  }
+
+  // Export Monitors
+  const handleExportMonitors = (selectedOnly = false) => {
+    const monitorsToExport = selectedOnly && selectedMonitors.size > 0
+      ? monitors.filter(m => selectedMonitors.has(m.id))
+      : monitors
+
+    if (monitorsToExport.length === 0) {
+      showNotification('error', 'No monitors to export')
+      return
+    }
+
+    const exportData = monitorsToExport.map(monitor => ({
+      name: monitor.name,
+      url: monitor.url,
+      interval_minutes: monitor.interval_minutes,
+      is_active: monitor.is_active
+    }))
+
+    const dataStr = JSON.stringify(exportData, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+
+    const filename = selectedOnly
+      ? `monitors-selected-export-${new Date().toISOString().split('T')[0]}.json`
+      : `monitors-export-${new Date().toISOString().split('T')[0]}.json`
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    const count = monitorsToExport.length
+    showNotification('success', `${count} monitor${count !== 1 ? 's' : ''} exported successfully`)
+  }
+
+  const handleDownloadSample = () => {
+    const sampleData = [
+      {
+        name: "Example API",
+        url: "https://api.example.com/health",
+        interval_minutes: 5,
+        is_active: true
+      },
+      {
+        name: "Company Website",
+        url: "https://www.company.com",
+        interval_minutes: 15,
+        is_active: true
+      },
+      {
+        name: "Development Server",
+        url: "https://dev.company.com/api/status",
+        interval_minutes: 10,
+        is_active: false
+      }
+    ]
+
+    const dataStr = JSON.stringify(sampleData, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'monitors-sample.json'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    showNotification('success', 'Sample file downloaded')
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (file.type !== 'application/json') {
+      showNotification('error', 'Please select a JSON file')
+      return
+    }
+
+    setImportFile(file)
+    const reader = new FileReader()
+
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string)
+
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid format: Expected an array of monitors')
+        }
+
+        const errors: string[] = []
+        const existingUrls = new Set(monitors.map(m => m.url.toLowerCase()))
+        let duplicates = 0
+
+        // Validate monitor structure
+        const validatedData = data.map((item, index) => {
+          if (!item.name || !item.url) {
+            errors.push(`Monitor ${index + 1}: Missing required fields (name, url)`)
+            return null
+          }
+
+          try {
+            new URL(item.url) // Validate URL format
+          } catch {
+            errors.push(`Monitor ${index + 1}: Invalid URL format`)
+            return null
+          }
+
+          if (existingUrls.has(item.url.toLowerCase())) {
+            duplicates++
+          }
+
+          return {
+            name: String(item.name),
+            url: String(item.url),
+            interval_minutes: Number(item.interval_minutes) || 5,
+            is_active: Boolean(item.is_active ?? true)
+          }
+        }).filter(Boolean)
+
+        setImportData(validatedData)
+        setImportPreview(validatedData.slice(0, 20)) // Show first 5 for preview
+        setImportValidation({
+          total: data.length,
+          valid: validatedData.length,
+          duplicates,
+          errors: errors.slice(0, 5) // Show first 5 errors
+        })
+
+      } catch (error) {
+        showNotification('error', error instanceof Error ? error.message : 'Invalid JSON file')
+        setImportFile(null)
+        setImportData([])
+        setImportPreview([])
+        setImportValidation({ total: 0, valid: 0, duplicates: 0, errors: [] })
+      }
+    }
+
+    reader.readAsText(file)
+  }
+
+  const handleImportMonitors = async () => {
+    if (!importData.length) return
+
+    setLoadingState('import', true)
+
+    try {
+      const results = await Promise.allSettled(
+        importData.map(async (monitorData) => {
+          const response = await fetch('/api/monitors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(monitorData)
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to import monitor')
+          }
+
+          return response.json()
+        })
+      )
+
+      const successful = results.filter(result => result.status === 'fulfilled').length
+      const failed = results.filter(result => result.status === 'rejected').length
+
+      if (failed > 0) {
+        showNotification('error', `Imported ${successful} monitors, ${failed} failed`)
+      } else {
+        showNotification('success', `Successfully imported ${successful} monitors`)
+      }
+
+      // Reset import state
+      setImportModal({ isOpen: false })
+      setImportFile(null)
+      setImportData([])
+      setImportPreview([])
+      setImportValidation({ total: 0, valid: 0, duplicates: 0, errors: [] })
+      if (fileInputRef.current) fileInputRef.current.value = ''
+
+      router.refresh()
+    } catch (error) {
+      showNotification('error', 'Failed to import monitors')
+    } finally {
+      setLoadingState('import', false)
+    }
   }
 
   // Bulk Operations
@@ -501,11 +716,20 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="default" className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm">
+          <Button
+            variant="default"
+            className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm"
+            onClick={() => setImportModal({ isOpen: true })}
+          >
             <Upload className="h-4 w-4" />
             <span className="hidden sm:inline">Import</span>
           </Button>
-          <Button variant="default" className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm">
+          <Button
+            variant="default"
+            className="flex items-center gap-2 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 backdrop-blur-sm text-primary transition-all duration-200 shadow-sm"
+            onClick={() => handleExportMonitors(false)}
+            disabled={monitors.length === 0}
+          >
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">Export</span>
           </Button>
@@ -600,9 +824,18 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
                     <span className="hidden sm:inline">Change Interval</span>
                     <span className="sm:hidden">Interval</span>
                   </Button>
-                  <Button size="sm" variant="default" className="hover:bg-info hover:text-info-foreground bg-info/10 border border-info/40 text-info text-xs sm:text-sm hidden sm:inline-flex">
+                  {/* <Button size="sm" variant="default" className="hover:bg-info hover:text-info-foreground bg-info/10 border border-info/40 text-info text-xs sm:text-sm hidden sm:inline-flex">
                     <Tag className="h-4 w-4 mr-1" />
                     Add Tags
+                  </Button> */}
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => handleExportMonitors(true)}
+                    className="hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary text-xs sm:text-sm"
+                  >
+                    <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden sm:inline">Export</span>
                   </Button>
                   <Button
                     size="sm"
@@ -628,17 +861,70 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
             </CardHeader>
             <CardContent>
               <div className="flex flex-col gap-4 mb-6">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by name or URL..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 border-muted-foreground/20"
-                  />
+                {/* Search and Filters Row */}
+                <div className="flex flex-col lg:flex-row gap-4">
+                  {/* Search Bar */}
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by name or URL..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 border-muted-foreground/20"
+                    />
+                  </div>
+
+                  {/* Desktop Filters - Next to Search */}
+                  <div className="hidden lg:flex items-center gap-2">
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-32 border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent className="backdrop-blur-xl bg-background/80 border-muted-foreground/20">
+                        <SelectItem value="all" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>All Status</SelectItem>
+                        <SelectItem value="up" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Online</SelectItem>
+                        <SelectItem value="down" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Offline</SelectItem>
+                        <SelectItem value="timeout" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Timeout</SelectItem>
+                        <SelectItem value="pending" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={intervalFilter} onValueChange={setIntervalFilter}>
+                      <SelectTrigger className="w-36 border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
+                        <SelectValue placeholder="Interval" />
+                      </SelectTrigger>
+                      <SelectContent className="backdrop-blur-xl bg-background/80 border-muted-foreground/20">
+                        <SelectItem value="all" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>All Intervals</SelectItem>
+                        {uniqueIntervals.map(interval => (
+                          <SelectItem key={interval} value={interval.toString()} className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>
+                            {formatInterval(interval)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+                      const [field, order] = value.split('-')
+                      setSortBy(field)
+                      setSortOrder(order as 'asc' | 'desc')
+                    }}>
+                      <SelectTrigger className="w-40 border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="backdrop-blur-xl bg-background/80 border-muted-foreground/20">
+                        <SelectItem value="name-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Name A-Z</SelectItem>
+                        <SelectItem value="name-desc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Name Z-A</SelectItem>
+                        <SelectItem value="url-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>URL A-Z</SelectItem>
+                        <SelectItem value="created_at-desc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Newest First</SelectItem>
+                        <SelectItem value="created_at-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Oldest First</SelectItem>
+                        <SelectItem value="interval-asc" className='hover:bg-accent/80 focus:bg-accent/80 bg-transparent'>Interval Low-High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {/* Mobile Filters - Below Search */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 lg:hidden">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="border-muted-foreground/20 bg-background/40 backdrop-blur-sm">
                       <SelectValue placeholder="Status" />
@@ -1110,6 +1396,167 @@ export function MonitorsPageClient({ monitors, stats }: MonitorsPageClientProps)
           </Card>
         </div>
       )}
+
+      {/* Import Monitors Modal */}
+      {importModal.isOpen && (
+        <div className="fixed inset-0 bg-background/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-2xl mx-4 backdrop-blur-xl bg-background/60 border-border/50 shadow-2xl max-h-[80vh] overflow-y-auto">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-foreground">Import Monitors</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setImportModal({ isOpen: false })
+                    setImportFile(null)
+                    setImportData([])
+                    setImportPreview([])
+                    setImportValidation({ total: 0, valid: 0, duplicates: 0, errors: [] })
+                    if (fileInputRef.current) fileInputRef.current.value = ''
+                  }}
+                  className="hover:bg-accent/80 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <CardDescription className="text-muted-foreground">
+                Upload a JSON file to import monitors. Supported format: array of monitor objects with name, url, interval_minutes, and is_active fields.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-foreground">Select JSON File</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleDownloadSample}
+                    className="text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    <Download className="h-3 w-3 mr-1" />
+                    Sample Format
+                  </Button>
+                </div>
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={handleFileUpload}
+                  className="border-border/60 bg-background/40 backdrop-blur-sm focus:border-primary/60 focus:bg-background/60"
+                  placeholder="Choose a JSON file"
+                />
+                {importFile && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    File: <span className="font-medium">{importFile.name}</span> ({(importFile.size / 1024).toFixed(1)} KB)
+                  </p>
+                )}
+              </div>
+
+              {/* Validation Summary */}
+              {importValidation.total > 0 && (
+                <div className="rounded-lg border border-muted-foreground/20 bg-background/40 backdrop-blur-sm p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span className="font-medium text-foreground">Validation Results</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Total:</span>
+                      <span className="ml-2 font-medium text-foreground">{importValidation.total}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Valid:</span>
+                      <span className="ml-2 font-medium text-success">{importValidation.valid}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Duplicates:</span>
+                      <span className="ml-2 font-medium text-warning">{importValidation.duplicates}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Errors:</span>
+                      <span className="ml-2 font-medium text-destructive">{importValidation.errors.length}</span>
+                    </div>
+                  </div>
+
+                  {importValidation.errors.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-muted-foreground/10">
+                      <p className="text-sm font-medium text-destructive mb-2">Validation Errors:</p>
+                      <ul className="text-sm text-muted-foreground space-y-1 max-h-20 overflow-y-auto">
+                        {importValidation.errors.map((error, index) => (
+                          <li key={index} className="text-destructive">• {error}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {importValidation.duplicates > 0 && (
+                    <div className="mt-2 text-sm text-warning">
+                      <AlertCircle className="h-3 w-3 inline mr-1" />
+                      {importValidation.duplicates} monitor(s) have URLs that already exist
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Import Preview */}
+              {importPreview.length > 0 && (
+                <div>
+                  <Label className="text-foreground">Preview ({importPreview.length} of {importData.length} monitors)</Label>
+                  <div className="mt-2 rounded-lg border border-muted-foreground/20 bg-background/40 backdrop-blur-sm p-3 max-h-60 overflow-y-auto">
+                    {importPreview.map((item, index) => (
+                      <div key={index} className="flex flex-col gap-1 py-2 border-b border-muted-foreground/10 last:border-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-foreground truncate">{item.name}</span>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs px-2 py-0 text-muted-foreground border-muted-foreground/20">
+                              {item.is_active ? 'Active' : 'Disabled'}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs px-2 py-0 text-muted-foreground border-muted-foreground/20">
+                              {formatInterval(item.interval_minutes)}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="text-sm text-muted-foreground truncate">{item.url}</div>
+                      </div>
+                    ))}
+                    {importData.length > 20 && (
+                      <div className="text-center text-sm text-muted-foreground py-2">
+                        ... and {importData.length - 20} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                <Button
+                  onClick={handleImportMonitors}
+                  disabled={isLoading['import'] || importData.length === 0}
+                  className="flex-1 hover:bg-primary hover:text-primary-foreground bg-primary/10 border border-primary/40 text-primary transition-all duration-200"
+                >
+                  {isLoading['import'] ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+                  Import {importData.length} Monitor{importData.length !== 1 ? 's' : ''}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setImportModal({ isOpen: false })
+                    setImportFile(null)
+                    setImportData([])
+                    setImportPreview([])
+                    setImportValidation({ total: 0, valid: 0, duplicates: 0, errors: [] })
+                    if (fileInputRef.current) fileInputRef.current.value = ''
+                  }}
+                  className="flex-1 hover:bg-accent/80 border-border/60 backdrop-blur-sm transition-all duration-200"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
-} 
+}
