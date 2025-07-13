@@ -311,6 +311,33 @@ BEGIN
 END;
 $$;
 
+-- Create a function to handle subscription status changes
+CREATE OR REPLACE FUNCTION handle_subscription_status_change()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if status changed to 'canceled'
+    IF NEW.status = 'canceled' AND OLD.status != 'canceled' THEN
+        -- Automatically downgrade to free plan
+        NEW.plan = 'free';
+        NEW.stripe_subscription_id = NULL;
+        NEW.stripe_price_id = NULL;
+        NEW.current_period_start = NULL;
+        NEW.current_period_end = NULL;
+        NEW.updated_at = NOW();
+        
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create the trigger
+DROP TRIGGER IF EXISTS subscription_status_change_trigger ON user_subscriptions;
+CREATE TRIGGER subscription_status_change_trigger
+    BEFORE UPDATE ON user_subscriptions
+    FOR EACH ROW
+    EXECUTE FUNCTION handle_subscription_status_change();
+
 -- Grant necessary permissions
 GRANT ALL ON public.user_subscriptions TO authenticated;
 GRANT ALL ON public.subscription_usage TO authenticated;

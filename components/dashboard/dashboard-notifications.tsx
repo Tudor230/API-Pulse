@@ -11,8 +11,12 @@ export function DashboardNotifications() {
         type: 'success' | 'error' | 'info'
         message: string
     } | null>(null)
+    const [isDismissed, setIsDismissed] = useState(false)
 
     useEffect(() => {
+        // Don't show notification if it was manually dismissed
+        if (isDismissed) return
+
         if (searchParams.get('success') === 'true') {
             setNotification({
                 type: 'success',
@@ -29,15 +33,18 @@ export function DashboardNotifications() {
                 message: 'Your subscription has been cancelled. You\'ll continue to have access to Pro features until the end of your billing period.',
             })
         }
+    }, [searchParams, isDismissed])
 
+    useEffect(() => {
         // Auto-hide notification after 10 seconds
-        if (notification) {
+        if (notification && !isDismissed) {
             const timer = setTimeout(() => {
                 setNotification(null)
+                setIsDismissed(true)
             }, 10000)
             return () => clearTimeout(timer)
         }
-    }, [searchParams, notification])
+    }, [notification, isDismissed])
 
     if (!notification) return null
 
@@ -66,7 +73,10 @@ export function DashboardNotifications() {
             {getIcon()}
             <AlertDescription>{notification.message}</AlertDescription>
             <button
-                onClick={() => setNotification(null)}
+                onClick={() => {
+                    setNotification(null)
+                    setIsDismissed(true)
+                }}
                 className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
             >
                 ×

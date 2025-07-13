@@ -122,7 +122,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
             stripe_price_id: subscription.items.data[0].price.id,
             current_period_start: periodStart,
             current_period_end: periodEnd,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            canceled_at: null
         })
         .eq('user_id', userSubscription.user_id)
 
