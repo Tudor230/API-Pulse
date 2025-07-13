@@ -7,6 +7,7 @@ import AddMonitorForm from '@/components/dashboard/monitor/add-monitor-form'
 import MonitorsList from '@/components/dashboard/monitor/monitors-list'
 import ResponseTimeAnalytics from '@/components/dashboard/monitor/response-time-analytics'
 import { SubscriptionStatus } from '@/components/dashboard/subscription/subscription-status'
+import { DashboardNotifications } from '@/components/dashboard/dashboard-notifications'
 import { Monitor } from '@/lib/supabase-types'
 import { Activity, AlertTriangle, CheckCircle, Clock, Timer, TrendingUp } from 'lucide-react'
 
@@ -47,6 +48,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8 ">
+      {/* Notifications */}
+      <DashboardNotifications />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

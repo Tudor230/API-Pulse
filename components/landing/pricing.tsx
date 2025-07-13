@@ -42,12 +42,43 @@ export function Pricing({
 }: PricingProps) {
   const [isMonthly, setIsMonthly] = useState(true);
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const switchRef = useRef<HTMLButtonElement>(null);
   const { theme } = useTheme();
   const { data: subscriptionData } = useSubscription();
 
   const currentPlan = subscriptionData?.subscription?.plan || null;
+
+  const handleCancelSubscription = async () => {
+    setIsLoading('free');
+
+    try {
+      const response = await fetch('/api/stripe/cancel-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error('Cancellation error:', data.error);
+        return;
+      }
+
+      if (data.success) {
+        // Show success message or redirect
+        window.location.href = '/dashboard?cancelled=true';
+      }
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+    } finally {
+      setIsLoading(null);
+      setShowCancelConfirm(false);
+    }
+  };
 
   const handleCheckout = async (plan: PricingPlan) => {
     // If user is already on this plan, do nothing
@@ -56,7 +87,12 @@ export function Pricing({
     }
 
     if (plan.planType === 'free') {
-      // For free plan, just redirect to sign up
+      // For free plan, show cancellation confirmation if user is on paid plan
+      if (currentPlan === 'pro' || currentPlan === 'enterprise') {
+        setShowCancelConfirm(true);
+        return;
+      }
+      // Otherwise just redirect to sign up
       window.location.href = plan.href;
       return;
     }
@@ -281,7 +317,7 @@ export function Pricing({
                         variant: "outline",
                       }),
                       "group relative w-full gap-2 overflow-hidden text-lg font-semibold tracking-tighter",
-                      "transform-gpu ring-offset-current transition-all duration-300 ease-out hover:ring-2 hover:ring-primary hover:ring-offset-1 hover:bg-primary hover:text-primary-foreground",
+                      "transform-gpu ring-offset-current transition-all duration-300 ease-out hover:ring-2 hover:ring-primary hover:ring-offset-1 hover:bg-primary hover:text-primary",
                       plan.isPopular
                         ? "bg-primary text-white"
                         : "bg-background text-foreground",
@@ -304,6 +340,39 @@ export function Pricing({
           </motion.div>
         ))}
       </div>
+
+      {/* Cancellation Confirmation Modal */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="p-6 rounded-lg max-w-md w-full mx-4 backdrop-blur-xl bg-background/90 border border-border/50 shadow-2xl">
+            <h3 className="text-lg font-semibold mb-4 text-foreground">Cancel Subscription</h3>
+            <p className="text-muted-foreground mb-6">
+              Are you sure you want to cancel your subscription? You'll continue to have access to Pro features until the end of your current billing period, then your account will be downgraded to the Free plan.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "flex-1"
+                )}
+              >
+                Keep Subscription
+              </button>
+              <button
+                onClick={handleCancelSubscription}
+                disabled={isLoading === 'free'}
+                className={cn(
+                  buttonVariants({ variant: "destructive" }),
+                  "flex-1"
+                )}
+              >
+                {isLoading === 'free' ? 'Cancelling...' : 'Cancel Subscription'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

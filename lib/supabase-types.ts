@@ -127,7 +127,7 @@ export interface RecentAlert {
 }
 
 // Subscription System Types
-export type SubscriptionPlan = 'free' | 'pro'
+export type SubscriptionPlan = 'free' | 'pro' | 'enterprise'
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete'
 
 export interface UserSubscription {

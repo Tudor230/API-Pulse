@@ -141,13 +141,16 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         throw new Error(`No user found for customer ${subscription.customer}`)
     }
 
+    const item = subscription.items.data[0]
+    const periodStart = new Date(item.current_period_start * 1000).toISOString()
+    const periodEnd = new Date(item.current_period_end * 1000).toISOString()
     // Update subscription status
     await supabase
         .from('user_subscriptions')
         .update({
             status: subscription.status as 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete',
-            current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
-            current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+            current_period_start: periodStart,
+            current_period_end: periodEnd,
             updated_at: new Date().toISOString()
         })
         .eq('user_id', userSubscription.user_id)
