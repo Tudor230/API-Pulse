@@ -74,8 +74,12 @@ export async function POST(request: NextRequest) {
             },
             allow_promotion_codes: true,
             billing_address_collection: 'required',
+            customer_update: {
+                address: 'auto',
+                name: 'auto'
+            },
             automatic_tax: {
-                enabled: false, // Enable this in production if needed
+                enabled: true,
             },
             ui_mode: 'hosted',
             custom_text: {
