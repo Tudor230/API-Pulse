@@ -8,20 +8,20 @@ interface EmailConfirmationProps {
 
 export function EmailConfirmation({ email }: EmailConfirmationProps) {
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md bg-background/20 backdrop-blur-md border-muted-foreground/20 shadow-2xl">
       <CardHeader className="text-center">
         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg 
-            className="w-8 h-8 text-primary" 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className="w-8 h-8 text-primary"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
             />
           </svg>
         </div>
@@ -34,8 +34,8 @@ export function EmailConfirmation({ email }: EmailConfirmationProps) {
         <p className="text-sm text-muted-foreground">
           Click the link in the email to confirm your account and start monitoring your APIs.
         </p>
-        
-        <div className="bg-muted p-4 rounded-lg text-sm text-muted-foreground">
+
+        <div className="bg-background/20 p-4 rounded-lg text-sm text-muted-foreground">
           <p className="font-medium mb-2">Didn&apos;t receive the email?</p>
           <ul className="text-left space-y-1">
             <li>• Check your spam or junk folder</li>
@@ -50,8 +50,8 @@ export function EmailConfirmation({ email }: EmailConfirmationProps) {
               Go to Sign In
             </Link>
           </Button>
-          
-          <Link 
+
+          <Link
             href="/"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
