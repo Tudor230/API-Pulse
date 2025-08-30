@@ -8,6 +8,7 @@ import {
   ReactNode,
   useCallback
 } from 'react'
+import { createClient } from '@/lib/supabase-client'
 import {
   UserSubscription,
   PlanLimits,
@@ -47,6 +48,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<SubscriptionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<any>(null)
+  
+  const supabase = createClient()
 
   const fetchSubscriptionData = useCallback(async () => {
     try {
@@ -55,13 +59,21 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
       const response = await fetch('/api/subscription')
       if (!response.ok) {
+        // If unauthorized, don't set it as an error - user might not be fully authenticated yet
+        if (response.status === 401) {
+          console.log('User not authenticated yet, skipping subscription fetch')
+          return
+        }
         throw new Error('Failed to fetch subscription data')
       }
 
       const subscriptionData = await response.json()
       setData(subscriptionData)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      // Only set error for non-auth related issues
+      if (err instanceof Error && !err.message.includes('401') && !err.message.includes('Unauthorized')) {
+        setError(err.message)
+      }
     } finally {
       setLoading(false)
     }
@@ -98,9 +110,39 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const canCreateNotificationChannel = (type: AlertType) => checkLimit('create_notification_channel', type)
   const canAccessTimeframe = (timeframe: string) => checkLimit('access_timeframe', timeframe)
 
+  // Listen for auth state changes
   useEffect(() => {
-    fetchSubscriptionData()
-  }, [fetchSubscriptionData])
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user || null)
+      
+      if (session?.user) {
+        await fetchSubscriptionData()
+      } else {
+        setLoading(false)
+      }
+    }
+
+    getInitialSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user || null)
+      
+      if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+        // Add a small delay to ensure session is fully established
+        setTimeout(async () => {
+          await fetchSubscriptionData()
+        }, 100)
+      } else if (event === 'SIGNED_OUT') {
+        // Clear subscription data when user signs out
+        setData(null)
+        setError(null)
+        setLoading(false)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [fetchSubscriptionData, supabase.auth])
 
   const isFreePlan = data?.subscription?.plan === 'free' || !data?.subscription
   const isProPlan = data?.subscription?.plan === 'pro' && data?.subscription?.status === 'active'
